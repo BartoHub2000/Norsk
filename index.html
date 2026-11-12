@@ -54,8 +54,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .streak{display:flex;align-items:center;gap:3px;font-weight:750;font-variant-numeric:tabular-nums}
 .streak svg{width:20px;height:20px}
 .streak.off{color:var(--muted)} .streak.off svg path{fill:var(--muted)}
-.ring{width:30px;height:30px}
-.ringtxt{font-family:var(--fm);font-size:.78rem;font-variant-numeric:tabular-nums}
+.ring{width:32px;height:32px}
+.ringtxt{font-family:var(--fm);font-size:.68rem;line-height:1.15;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;text-align:left}
+.ringtxt .l1{color:var(--accent)} .ringtxt .l2{color:var(--fjord)} .ringtxt .okk{color:var(--good)}
 /* tab bar */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
@@ -113,10 +114,11 @@ nav.tabs .badge{position:absolute;margin-left:22px;margin-top:-2px;background:va
 .drill .big{font-size:1.4rem;font-weight:550;line-height:1.35}
 .drill .ans{font-size:1.35rem;font-weight:600;color:var(--fjord);line-height:1.35}
 .reps{display:flex;gap:6px} .reps i{width:22px;height:6px;border-radius:3px;background:var(--sunk)} .reps i.on{background:var(--accent)}
-.rate{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.rate button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;min-height:64px}
+.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rate button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;min-height:92px;text-align:center}
+.rate button .d{font-size:.7rem;color:var(--muted);line-height:1.2}
 .rate button .s{font-size:1.25rem;color:var(--star);line-height:1}
-.rate button .k{font-family:var(--fd);font-weight:800;font-size:1rem}
+.rate button .k{font-family:var(--fd);font-weight:750;font-size:.9rem;line-height:1.15}
 .legend{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:.8rem;color:var(--muted)}
 .legend b{color:var(--star);font-weight:700}
 .prog{height:4px;background:var(--sunk);border-radius:2px;overflow:hidden} .prog i{display:block;height:100%;background:var(--accent)}
@@ -135,10 +137,18 @@ nav.tabs .badge{position:absolute;margin-left:22px;margin-top:-2px;background:va
 .heat i.today{outline:2px solid var(--fg);outline-offset:-2px}
 .dist{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--sunk)}
 .dist i{display:block;height:100%}
-.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.bt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.bp{display:block;height:4px;border-radius:2px;background:var(--sunk);overflow:hidden;margin-top:2px}.bp i{display:block;height:100%;background:var(--accent)}
+.bdg .ic svg{width:17px;height:17px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile.preset{text-align:left;min-height:0;padding:10px}
+.tile.preset b{font-size:1.15rem}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.gbar{display:grid;grid-template-columns:96px 1fr auto;gap:10px;align-items:center;font-size:.85rem}
 .bdg{border:1px solid var(--line);border-radius:12px;padding:10px;font-size:.82rem;display:flex;gap:8px;align-items:center;background:var(--surface)}
 .bdg .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sunk);font-weight:800;font-size:.8rem;flex:none}
-.bdg.got .ic{background:var(--accent);color:var(--accent-fg)} .bdg:not(.got){opacity:.6}
+.bdg.got .ic{background:var(--accent);color:var(--accent-fg)} .bdg:not(.got) .ic{color:var(--muted)} .bdg:not(.got) b{color:var(--muted)}
 .mnb{border:0;background:none;padding:0 2px;min-height:0;font-size:.75rem;color:var(--muted);text-decoration:underline dotted;cursor:pointer}
 .mn,.mnh{display:block;margin-top:3px;padding:3px 8px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent);border-radius:0 6px 6px 0;font-size:.82rem;color:var(--fg)}
 .mnh{margin:0 12px 10px 52px}
@@ -159,7 +169,7 @@ textarea{width:100%;font:inherit;font-size:.8rem;font-family:var(--fm);color:var
 <body>
 <header class="top"><div class="wrap hbar">
   <div class="brand">Norsk<span>.</span></div>
-  <button class="hstats" data-a="stats" aria-label="Statystyki, seria i cel dzienny">
+  <button class="hstats" data-a="stats" aria-label="Statystyki, seria i cele na dziś: minuty słuchania i powtórzenia">
     <span class="streak" id="hstreak"></span>
     <svg class="ring" viewBox="0 0 36 36" id="hring" aria-hidden="true"></svg>
     <span class="ringtxt" id="hxp"></span>
@@ -189,8 +199,9 @@ const AFILE={}; AF.forEach(x=>x.segs.forEach((s,k)=>AFILE[x.from-1+k]={f:x.f,s:s
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const STAR='★';
-const LABELS=['','Nic nie pamiętam','Trochę pamiętam','Pamiętam, ale z błędami','Znam, ale z namysłem lub drobnym błędem','Znam doskonale'];
-const SHORT=['','nic','trochę','z błędami','prawie','perfekt'];
+const LABELS=['','Nie umiem','Umiem trochę','Umiem doskonale'];
+const LDESC=['','nie pamiętam albo mówię z dużymi błędami','powiem, ale z namysłem albo z drobnym błędem','mówię od razu i poprawnie'];
+const SHORT=['','nie umiem','trochę','doskonale'];
 
 /* ---------- dates ---------- */
 const dnum=(d=new Date())=>Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000);
@@ -199,8 +210,8 @@ const today=()=>dnum();
 
 /* ---------- state ---------- */
 const KEY='norsk1200.v2';
-const APPVER='3';
-const DEF={v:2,s:{},u:{},day:{},goal:50,newGoal:10,best:0,set:{rate:1,reps:5,tr:true,lmin:20,lrep:1,lpool:'all',lspeed:1,lmode:'listen'},bdg:{},m:{}};
+const APPVER='4';
+const DEF={v:2,s:{},u:{},day:{},gl:30,gr:100,newGoal:10,best:0,set:{rate:1,reps:5,tr:true,lmin:20,lrep:1,lpool:'all',lspeed:1,lmode:'listen'},bdg:{},m:{}};
 // skojarzenia z naszych rozmów, do edycji w aplikacji (klucz = forma podstawowa)
 const SEED_M={'trenge':'trening: żeby coś umieć, potrzebujesz treningu','framme':'brama: jesteś na miejscu, kiedy stoisz pod bramą','glemme':'gleba + mmm: zakopałem coś w glebie i… mmm, zapomniałem gdzie',
  'ødelegge':'delegacja: przyjechała delegacja i wszystko zepsuła','lure på':'lura: zastanawiam się, czemu ta kawa to taka lura','bry seg':'brwi: unosisz brwi, bo ci zależy','lag':'lag w grze: cała drużyna gra z lagiem',
@@ -216,7 +227,11 @@ let S;
 try{S=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){S=null;}
 if(!S||S.v!==2) S=JSON.parse(JSON.stringify(DEF));
 function normState(){S.set=Object.assign({},DEF.set,S.set||{}); S.bdg=S.bdg||{}; S.m=S.m||{}; S.s=S.s||{}; S.u=S.u||{}; S.day=S.day||{};
-  if(!S.mSeed){for(const k in SEED_M) if(!S.m[k]) S.m[k]=SEED_M[k]; S.mSeed=1;}}
+  if(!S.mSeed){for(const k in SEED_M) if(!S.m[k]) S.m[k]=SEED_M[k]; S.mSeed=1;}
+  if(S.gl==null) S.gl=30; if(S.gr==null) S.gr=100;
+  if(!S.v3){ // z punktów i 5 gwiazdek na dwa cele i 3 gwiazdki
+    const og=S.goal||50; for(const k in S.day){const r=S.day[k]; if(r.xp!=null&&r.xp>=og) r.ok=1; if(r.rp==null) r.rp=r.t||0;}
+    for(const k in S.s){const x=S.s[k]; if(x&&x.r) x.r=x.r<=2?1:x.r<=4?2:3;} delete S.goal; S.v3=1;}}
 normState();
 let saveT=null;
 function save(){clearTimeout(saveT); saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Nie udało się zapisać postępu');}},250);}
@@ -225,25 +240,32 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}c
 const sst=i=>S.s[i]||null;
 const stars=i=>(S.s[i]&&S.s[i].r)||0;
 const started=u=>!!S.u[u];
-const dayRec=(n=today())=>{const k=dkey(n); return S.day[k]||(S.day[k]={xp:0,t:0,nw:0,ls:0});};
-function addXP(x,field,amt){const r=dayRec(); const before=r.xp; r.xp+=x; if(field) r[field]=(r[field]||0)+(amt==null?1:amt);
-  if(before<S.goal&&r.xp>=S.goal){ const st=streak(); if(st.cur>S.best) S.best=st.cur; celebrate(`Cel dzienny zdobyty!`,`Seria: ${st.cur} ${st.cur===1?'dzień':'dni'}`); }
+const dayRec=(n=today())=>{const k=dkey(n); return S.day[k]||(S.day[k]={t:0,nw:0,ls:0,rp:0});};
+const doneL=r=>(r.ls||0)>=S.gl*60, doneR=r=>(r.rp||0)>=S.gr;
+// minuty i powtórzenia: oba cele = dzień zaliczony = seria
+function track(field,amt){const r=dayRec(); r[field]=(r[field]||0)+amt; checkDay(r);}
+function checkDay(r){r=r||dayRec();
+  if(!r.okL&&doneL(r)){r.okL=1; if(!doneR(r)) toast('Minuty słuchania na dziś zaliczone');}
+  if(!r.okR&&doneR(r)){r.okR=1; if(!doneL(r)) toast('Powtórzenia na dziś zaliczone');}
+  if(!r.ok&&doneL(r)&&doneR(r)){r.ok=1; const st=streak(); if(st.cur>S.best) S.best=st.cur; celebrate('Cel dzienny zaliczony!',`Seria: ${st.cur} ${st.cur===1?'dzień':'dni'}`);}
+  if(r.ok&&S.gl>=120&&S.gr>=300) r.hd=1;
   checkBadges(); save(); header();}
-function streak(){const t=today(); let cur=0; let n=t; const met=k=>{const r=S.day[dkey(k)]; return r&&r.xp>=S.goal;};
+function addNew(n){const r=dayRec(); r.nw=(r.nw||0)+n; checkBadges(); save(); header();}
+function streak(){const t=today(); let cur=0; let n=t; const met=k=>{const r=S.day[dkey(k)]; return !!(r&&r.ok);};
   const todayMet=met(t); if(!todayMet) n=t-1; while(met(n)){cur++; n--;} return {cur,todayMet};}
 
 /* ---------- derived stats ---------- */
 function unitInfo(u){const [a,b]=uRange(u); let sum=0,rated=0,five=0; for(let i=a;i<b;i++){const r=stars(i); sum+=r; if(r)rated++; if(r>=5)five++;}
-  const n=b-a; const pct=sum/(5*n); const st=!started(u)?'new':(rated===n&&Array.from({length:n},(_,k)=>stars(a+k)).every(r=>r>=4)?'done':'learn'); return {n,pct,rated,five,st,a,b};}
-function groupInfo(g){const [a,b]=gRange(g); let sum=0; for(let i=a;i<b;i++) sum+=stars(i); const us=gUnits(g); return {pct:sum/(5*(b-a)),startedN:us.filter(started).length,doneN:us.filter(u=>unitInfo(u).st==='done').length};}
+  const n=b-a; const pct=sum/(3*n); const st=!started(u)?'new':(rated===n&&Array.from({length:n},(_,k)=>stars(a+k)).every(r=>r>=3)?'done':'learn'); return {n,pct,rated,five,st,a,b};}
+function groupInfo(g){const [a,b]=gRange(g); let sum=0; for(let i=a;i<b;i++) sum+=stars(i); const us=gUnits(g); return {pct:sum/(3*(b-a)),startedN:us.filter(started).length,doneN:us.filter(u=>unitInfo(u).st==='done').length};}
 function learningSet(){const out=[]; for(const u in S.u){const [a,b]=uRange(+u); for(let i=a;i<b;i++) out.push(i);} return out.sort((x,y)=>x-y);}
 function dueList(){const t=today(); return learningSet().filter(i=>{const s=sst(i); return !s||!s.r||s.d<=t;}).sort((x,y)=>(stars(x)-stars(y))||(x-y));}
 function nextUnit(){for(let u=0;u<NU;u++) if(!started(u)) return u; return -1;}
 
 /* ---------- SRS ---------- */
 function rate(i,r){const t=today(); const s=S.s[i]||{r:0,d:t,n:0,iv:0}; let iv;
-  if(r===1) iv=0; else if(r===2) iv=1; else if(r===3) iv=2; else if(r===4) iv=Math.max(4,Math.round((s.iv||1)*1.8)); else iv=Math.max(7,Math.round((s.iv||2)*2.5));
-  iv=Math.min(iv,90); S.s[i]={r,d:t+iv,n:(s.n||0)+1,iv}; addXP(1,'t');}
+  if(r===1) iv=0; else if(r===2) iv=Math.max(1,Math.min(4,Math.round((s.iv||1)*1.5))); else iv=Math.max(4,Math.round((s.r===3?(s.iv||2):1.6)*2.5));
+  iv=Math.min(iv,90); S.s[i]={r,d:t+iv,n:(s.n||0)+1,iv}; const dr=dayRec(); dr.t=(dr.t||0)+1; track('rp',1);}
 
 /* ---------- audio helpers ---------- */
 const setPitch=el=>{try{el.preservesPitch=true;el.webkitPreservesPitch=true;el.mozPreservesPitch=true;}catch(e){}};
@@ -277,7 +299,8 @@ async function clip(i){if(CLIPS.has(i)){const v=CLIPS.get(i); CLIPS.delete(i); C
   const v={url:URL.createObjectURL(wavBlob(out,sr)),dur:out.length/sr}; CLIPS.set(i,v);
   while(CLIPS.size>60){const k=CLIPS.keys().next().value; URL.revokeObjectURL(CLIPS.get(k).url); CLIPS.delete(k);} return v;}
 function prefetch(i){if(AFILE[i]) clip(i).catch(()=>{});}
-async function playOne(i,id){const a=AFILE[i]; if(!a) return 0; pauseBg();
+async function playOne(i,id){const v=await playOne0(i,id); if(v>0){const r=dayRec(); r.ls=(r.ls||0)+v; track('rp',1);} return v;}
+async function playOne0(i,id){const a=AFILE[i]; if(!a) return 0; pauseBg();
   let c=null; try{c=await withTimeout(clip(i),15000);}catch(e){c=null;}
   if(!alive(id)) return 0;
   if(!c) return playSeek(i,id);
@@ -306,20 +329,21 @@ let V={tab:'learn',view:'home',g:0,u:0,mode:'read',open:{},cur:-1};
 let T=null; // test session
 function toast(t){const e=$('#toast'); e.textContent=t; e.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>e.hidden=true,2300);}
 function celebrate(title,sub){const o=$('#overlay'); o.innerHTML=`<div class="celebrate" data-a="closeov"><div class="box"><svg viewBox="0 0 24 24" width="56" height="56" style="margin:0 auto"><path d="M12 2c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z" fill="var(--accent)"/></svg><h2>${esc(title)}</h2><p class="muted" style="margin:0">${esc(sub)}</p><button class="primary" data-a="closeov">Dalej</button></div></div>`;}
-function header(){const st=streak(); const r=dayRec(); const p=Math.min(1,r.xp/S.goal);
+function header(){const st=streak(); const r=dayRec(); const pl=Math.min(1,(r.ls||0)/(S.gl*60)), pr=Math.min(1,(r.rp||0)/S.gr);
   $('#hstreak').className='streak'+(st.todayMet?'':' off');
   $('#hstreak').innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z" fill="var(--accent)"/></svg>${st.cur}`;
-  const C=2*Math.PI*15; $('#hring').innerHTML=`<circle cx="18" cy="18" r="15" fill="none" stroke="var(--sunk)" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="${p>=1?'var(--good)':'var(--accent)'}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${C*p} ${C}" transform="rotate(-90 18 18)"/>`;
-  $('#hxp').textContent=`${Math.min(r.xp,9999)}/${S.goal}`;
+  const ring=(R,p,col)=>{const C=2*Math.PI*R; return `<circle cx="18" cy="18" r="${R}" fill="none" stroke="var(--sunk)" stroke-width="3.6"/><circle cx="18" cy="18" r="${R}" fill="none" stroke="${p>=1?'var(--good)':col}" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="${C*p} ${C}" transform="rotate(-90 18 18)"/>`;};
+  $('#hring').innerHTML=ring(15.5,pl,'var(--accent)')+ring(10,pr,'var(--fjord)');
+  $('#hxp').innerHTML=`<span class="${pl>=1?'okk':'l1'}">${Math.floor((r.ls||0)/60)}/${S.gl} min</span><span class="${pr>=1?'okk':'l2'}">${r.rp||0}/${S.gr} powt.</span>`;
   const due=dueList().length; const b=$('#tbadge'); b.hidden=!due; b.textContent=due>99?'99+':due;
   ['learn','test','listen'].forEach(t=>$('#tb-'+t).setAttribute('aria-current',V.tab===t&&V.view!=='stats'&&!T?'page':'false'));}
 function go(o){stopFg(); Object.assign(V,o); render(); window.scrollTo(0,0);}
-function starStr(r){return `<span class="stars" aria-label="${r} z 5 gwiazdek">${STAR.repeat(r)}<span class="off">${STAR.repeat(5-r)}</span></span>`;}
+function starStr(r){r=Math.max(0,Math.min(3,r||0)); return `<span class="stars" aria-label="${r} z 3 gwiazdek">${STAR.repeat(r)}<span class="off">${STAR.repeat(3-r)}</span></span>`;}
 const pct=x=>Math.round(x*100)+'%';
 function render(){
   const app=$('#app');
-  if(T) app.innerHTML=testView();
-  else if(V.view==='stats') app.innerHTML=statsView();
+  if(V.view==='stats') app.innerHTML=statsView();
+  else if(T) app.innerHTML=testView();
   else if(V.tab==='learn') app.innerHTML=V.view==='group'?groupView():V.view==='unit'?unitView():learnHome();
   else if(V.tab==='test') app.innerHTML=testHome();
   else app.innerHTML=listenView();
@@ -342,7 +366,7 @@ function learnHome(){
 function groupView(){const g=V.g,[a,b]=gRange(g),gi=groupInfo(g);
   let h=`<div class="stack"><button class="ghost back" data-a="home">‹ Setki</button><div class="between"><div><div class="eyebrow">Setka ${g+1} z ${NG}</div><h1>Zdania ${a+1}–${b}</h1></div><span class="pct" style="font-size:1.2rem">${pct(gi.pct)}</span></div><div class="bar"><i style="width:${gi.pct*100}%"></i></div><div class="stack" style="gap:8px">`;
   gUnits(g).forEach((u,k)=>{const ui=unitInfo(u); const lab={new:'nowa',learn:'w nauce',done:'opanowana'}[ui.st];
-    const avg=ui.rated?Math.round(ui.pct*5):0;
+    const avg=ui.rated?Math.round(ui.pct*3):0;
     h+=`<button class="ucard" data-a="openunit" data-u="${u}"><div style="min-width:0"><div class="between"><b>Paczka ${k+1} · ${ui.a+1}–${ui.b}</b></div><div class="muted small" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(D[ui.a][0])}, ${esc(D[ui.a+1][0])}, ${esc(D[ui.a+2][0])}…</div>${started(u)?`<div class="row" style="gap:10px;margin-top:4px">${starStr(avg)}<span class="pct muted">${pct(ui.pct)}</span></div>`:''}</div><span class="chipst ${ui.st}">${lab}</span></button>`;});
   return h+`</div></div>`;}
 const lc=s=>String(s||'').toLowerCase().trim();
@@ -370,7 +394,7 @@ function unitView(){const u=V.u, ui=unitInfo(u), g=Math.floor(u/10);
     <div class="drill"><div class="eyebrow">Zdanie ${i+1} z ${ui.b} · słuchaj i powtarzaj w pauzie</div><div class="big">${esc(D[i][1])}</div><div class="muted">${esc(D[i][3])}</div><div class="reps" id="reps">${Array.from({length:S.set.reps},()=>'<i></i>').join('')}</div></div>
     <div class="row"><button data-a="prev">‹</button><button class="primary" data-a="rep" id="repbtn" style="flex:1">▶ Start od zdania ${i+1}</button><button data-a="next">›</button></div>`;
   }
-  if(!started(u)) h+=`<div class="hero"><b>Gotowy na tę paczkę?</b><span class="muted small">Dodanie jej do nauki wrzuci te zdania do testów i do słuchania w tle. +20 punktów.</span><button class="primary" data-a="startunit" data-u="${u}">Dodaj do nauki</button></div>`;
+  if(!started(u)) h+=`<div class="hero"><b>Gotowy na tę paczkę?</b><span class="muted small">Dodanie jej do nauki wrzuci te zdania do testów i do słuchania w tle.</span><button class="primary" data-a="startunit" data-u="${u}">Dodaj do nauki</button></div>`;
   else{ const nu=nextUnit(); h+=`<div class="grid2"><button class="primary" data-a="testunit" data-u="${u}">Sprawdź tę paczkę</button>${nu>=0?`<button data-a="openunit" data-u="${nu}">Następna paczka ›</button>`:'<span></span>'}</div>`;}
   return h+`</div>`;}
 const LSPEEDS=[0.8,1,1.25,1.5];
@@ -380,39 +404,38 @@ function hl(){document.querySelectorAll('.sitem').forEach(x=>x.classList.toggle(
 /* ---------- TEST ---------- */
 function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.filter(i=>stars(i)>0&&stars(i)<=2);
   if(!ls.length) return `<div class="stack"><h1>Test</h1><div class="hero"><b>Najpierw dodaj paczkę do nauki</b><span class="muted small">Testujesz tylko zdania, których się uczysz. Zacznij od pierwszej paczki w zakładce Nauka.</span><button class="primary" data-a="tab" data-t="learn">Przejdź do nauki</button></div></div>`;
-  const dist=[0,0,0,0,0,0]; ls.forEach(i=>dist[stars(i)]++);
-  const cols=['var(--sunk)','var(--bad)','color-mix(in srgb,var(--bad) 50%,var(--warn))','var(--warn)','color-mix(in srgb,var(--warn) 40%,var(--good))','var(--good)'];
+  const dist=[0,0,0,0]; ls.forEach(i=>dist[stars(i)]++);
+  const cols=['var(--sunk)','var(--bad)','var(--warn)','var(--good)'];
   let h=`<div class="stack"><h1>Test</h1>
-  <div class="hero"><div class="eyebrow">Do powtórki dziś</div><div class="row" style="align-items:baseline"><b class="big">${due.length}</b><span class="muted">zdań</span></div><span class="muted small">Najpierw te, które znasz najsłabiej. Zdania z 5 gwiazdkami wracają co tydzień lub rzadziej.</span><button class="primary" data-a="startdue" ${due.length?'':'disabled'}>Zacznij test</button></div>
+  <div class="hero"><div class="eyebrow">Do powtórki dziś</div><div class="row" style="align-items:baseline"><b class="big">${due.length}</b><span class="muted">zdań</span></div><span class="muted small">Najpierw te, które znasz najsłabiej. Zdania z 3★ wracają po kilku dniach, potem coraz rzadziej.</span><button class="primary" data-a="startdue" ${due.length?'':'disabled'}>Zacznij test</button></div>
   <div class="grid2"><button class="tile" data-a="startweak" ${weak.length?'':'disabled'}><span class="eyebrow">Słabe 1–2★</span><b>${weak.length}</b><span class="muted small">Dociśnij najsłabsze</span></button><button class="tile" data-a="startmix"><span class="eyebrow">Losowy mix</span><b>20</b><span class="muted small">ze wszystkich w nauce</span></button></div>
   <div class="card stack" style="gap:8px"><div class="between"><h3>Twoje zdania</h3><span class="muted small">${ls.length} w nauce</span></div><div class="dist">${dist.map((c,k)=>c?`<i style="width:${c/ls.length*100}%;background:${cols[k]}" title="${k}★: ${c}"></i>`:'').join('')}</div>
   <div class="row small muted" style="gap:12px">${dist.map((c,k)=>`<span>${k?k+'★':'bez oceny'}: <b>${c}</b></span>`).join('')}</div></div>
   <h2>Test paczki</h2><div class="stack" style="gap:8px">`;
   Object.keys(S.u).map(Number).sort((a,b)=>b-a).forEach(u=>{const ui=unitInfo(u); const d=dueList().filter(i=>i>=ui.a&&i<ui.b).length;
-    h+=`<button class="ucard" data-a="testunit" data-u="${u}"><div><b>Zdania ${ui.a+1}–${ui.b}</b><div class="row" style="gap:10px;margin-top:2px">${starStr(ui.rated?Math.round(ui.pct*5):0)}<span class="pct muted">${pct(ui.pct)}</span></div></div><span class="chipst ${d?'learn':'done'}">${d?d+' do powtórki':'aktualna'}</span></button>`;});
+    h+=`<button class="ucard" data-a="testunit" data-u="${u}"><div><b>Zdania ${ui.a+1}–${ui.b}</b><div class="row" style="gap:10px;margin-top:2px">${starStr(ui.rated?Math.round(ui.pct*3):0)}<span class="pct muted">${pct(ui.pct)}</span></div></div><span class="chipst ${d?'learn':'done'}">${d?d+' do powtórki':'aktualna'}</span></button>`;});
   return h+`</div></div>`;}
-function startTest(list,title,back){ if(!list.length){toast('Brak zdań do testu');return;} stopFg(); T={q:list.slice(),k:0,show:false,title,back,got:[],requeued:{},xp0:dayRec().xp}; render(); window.scrollTo(0,0); prefetch(T.q[0]); prefetch(T.q[1]);}
+function startTest(list,title,back){ if(!list.length){toast('Brak zdań do testu');return;} stopFg(); T={q:list.slice(),k:0,show:false,title,back,got:[],requeued:{},rp0:dayRec().rp||0}; render(); window.scrollTo(0,0); prefetch(T.q[0]); prefetch(T.q[1]);}
 function testView(){const R=T;
-  if(R.k>=R.q.length){const n=R.got.length; const avg=n?(R.got.reduce((a,b)=>a+b,0)/n):0; const d=[0,0,0,0,0,0]; R.got.forEach(r=>d[r]++);
+  if(R.k>=R.q.length){const n=R.got.length; const avg=n?(R.got.reduce((a,b)=>a+b,0)/n):0; const d=[0,0,0,0]; R.got.forEach(r=>d[r]++);
     return `<div class="stack"><div class="eyebrow">${esc(R.title)} · koniec</div><h1>Średnio ${avg.toFixed(1)} ★</h1>
-    <div class="card stack" style="gap:6px">${[5,4,3,2,1].map(k=>`<div class="between small"><span>${starStr(k)} ${SHORT[k]}</span><b>${d[k]}</b></div>`).join('')}</div>
-    <p class="muted" style="margin:0">+${dayRec().xp-R.xp0} punktów. Zdania z 1–2★ zobaczysz jeszcze dziś albo jutro, z 5★ dopiero za tydzień lub później.</p>
+    <div class="card stack" style="gap:6px">${[3,2,1].map(k=>`<div class="between small"><span>${starStr(k)} ${SHORT[k]}</span><b>${d[k]}</b></div>`).join('')}</div>
+    <p class="muted" style="margin:0">+${(dayRec().rp||0)-R.rp0} powtórzeń. Zdania z 1★ wrócą jeszcze dziś, z 2★ za 1–4 dni, z 3★ za kilka dni lub później.</p>
     <div class="grid2"><button class="primary" data-a="testagain">Słabe jeszcze raz</button><button data-a="testend">Gotowe</button></div></div>`;}
   const i=R.q[R.k];
   return `<div class="stack"><div class="between"><button class="ghost back" data-a="testend">‹ Zakończ</button><span class="pct muted">${R.k+1} / ${R.q.length}</span></div>
   <div class="prog"><i style="width:${R.k/R.q.length*100}%"></i></div>
   <div class="drill"><div class="eyebrow">Zdanie ${i+1} · powiedz je na głos po norwesku</div><div class="big">${esc(D[i][3])}</div>
   ${R.show?`<div style="border-top:1px solid var(--line);padding-top:12px" class="stack" ><div class="ans">${esc(D[i][1])}</div><div class="row"><button class="mini" data-a="say">▶ Lektor</button><button class="mini" data-a="twords" aria-expanded="${!!R.words}">${R.words?'Zwiń rozbiór':'Rozbiór słów'}</button><span class="small muted" style="font-family:var(--fm)">${esc(D[i][0])} — ${esc(D[i][2])}</span></div>${R.words?`<div style="margin-left:-52px">${wordsTable(i)}</div>`:mnList(i)}</div>`:''}</div>
-  ${R.show?`<div class="eyebrow">Jak dobrze znasz to zdanie?</div><div class="rate">${[1,2,3,4,5].map(k=>`<button data-a="rate" data-r="${k}" aria-label="${k}: ${LABELS[k]}"><span class="s">${STAR}</span><span class="k">${k}</span></button>`).join('')}</div>
-    <div class="legend">${[1,2,3,4,5].map(k=>`<b>${k}</b><span>${LABELS[k]}</span>`).join('')}</div>`
+  ${R.show?`<div class="eyebrow">Jak dobrze znasz to zdanie?</div><div class="rate">${[1,2,3].map(k=>`<button data-a="rate" data-r="${k}" aria-label="${LABELS[k]}: ${LDESC[k]}"><span class="s">${STAR.repeat(k)}</span><span class="k">${LABELS[k]}</span><span class="d">${LDESC[k]}</span></button>`).join('')}</div>`
   :`<button class="primary" data-a="reveal" style="min-height:56px">Sprawdź</button>`}</div>`;}
 
 /* ---------- SŁUCHANIE (mix in background) ---------- */
 const bg=$('#bg'); let MIX=null; let lastCT=0; let building=false;
-const WEIGHT=[6,6,4,3,1.5,0.5];
+const WEIGHT=[6,6,3,0.7];
 function poolFor(mode){let ls=learningSet(); if(mode==='recent'){const us=Object.keys(S.u).map(Number).sort((a,b)=>(S.u[b]-S.u[a])||(b-a)).slice(0,3); ls=ls.filter(i=>us.includes(unitOf(i)));} return ls.filter(i=>AFILE[i]);}
-function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0,0,0]; pool.forEach(i=>counts[stars(i)]++);
-  const tw=pool.reduce((a,i)=>a+WEIGHT[stars(i)],0)||1; const sh=[0,1,2,3,4,5].map(k=>counts[k]*WEIGHT[k]/tw); const mx=Math.max(...sh)||1; const share=k=>sh[k]/mx;
+function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0]; pool.forEach(i=>counts[stars(i)]++);
+  const tw=pool.reduce((a,i)=>a+WEIGHT[stars(i)],0)||1; const sh=[0,1,2,3].map(k=>counts[k]*WEIGHT[k]/tw); const mx=Math.max(...sh)||1; const share=k=>sh[k]/mx;
   const playing=MIX&&!bg.paused; const cur=MIX?curItem():null;
   let h=`<div class="stack"><h1>Słuchanie</h1>`;
   if(!pool.length) return h+`<div class="hero"><b>Nie masz jeszcze zdań w nauce</b><span class="muted small">Dodaj paczkę w zakładce Nauka, a tutaj będziesz jej słuchał w tle.</span><button class="primary" data-a="tab" data-t="learn">Przejdź do nauki</button></div></div>`;
@@ -428,16 +451,16 @@ function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0,0,0
   <div class="row"><button class="chip" data-a="lpool" data-v="all" aria-pressed="${S.set.lpool==='all'}">Wszystkie w nauce</button><button class="chip" data-a="lpool" data-v="recent" aria-pressed="${S.set.lpool==='recent'}">Ostatnie 3 paczki</button></div>
   <div class="row"><span class="muted small">Długość</span>${[10,20,40].map(m=>`<button class="chip" data-a="lmin" data-v="${m}" aria-pressed="${S.set.lmin===m}">${m} min</button>`).join('')}</div>
   <div class="row"><span class="muted small">Każde zdanie</span>${[1,2].map(m=>`<button class="chip" data-a="lrep" data-v="${m}" aria-pressed="${S.set.lrep===m}">${m}×</button>`).join('')}</div>
-  <div><div class="eyebrow" style="margin-bottom:6px">Jak często usłyszysz zdania (wg gwiazdek)</div><div class="weights">${[0,1,2,3,4,5].map(k=>`<div><i style="height:${Math.max(3,share(k)*100)}%"></i><span>${k?k+'★':'nowe'}</span><span>${counts[k]}</span></div>`).join('')}</div></div>
+  <div><div class="eyebrow" style="margin-bottom:6px">Jak często usłyszysz zdania (wg gwiazdek)</div><div class="weights">${[0,1,2,3].map(k=>`<div><i style="height:${Math.max(3,share(k)*100)}%"></i><span>${k?k+'★':'nowe'}</span><span>${counts[k]}</span></div>`).join('')}</div></div>
   <button class="primary" data-a="buildmix" ${building?'disabled':''} id="buildbtn">${building?'Przygotowuję…':'▶ Przygotuj i słuchaj'}</button></div>
-  <p class="note">Zdania z 1★ i nowe słyszysz najczęściej, a z 5★ rzadko, żeby nie wyleciały z głowy. Mieszanka jest jednym nagraniem, więc gra także w tle i przy zablokowanym ekranie.</p></div>`;
+  <p class="note">Nowe i z 1★ słyszysz najczęściej, z 2★ rzadziej, a z 3★ od czasu do czasu, żeby nie wyleciały z głowy. Mieszanka jest jednym nagraniem, więc gra także w tle i przy zablokowanym ekranie.</p></div>`;
   return h;}
 // pause after each sentence, in recording seconds. Repeat mode: time to say it yourself at your own pace (≈ the sentence at 1× plus a breath), whatever the tempo.
-const gapFor=d=>S.set.lmode==='repeat'?(d*1.15+0.7)*S.set.lspeed:1.3;
+const gapFor=d=>S.set.lmode==='repeat'?(d*0.85+0.35)*S.set.lspeed:0.45;
 const fmtT=s=>{s=Math.max(0,Math.floor(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
 function curItem(){if(!MIX) return null; const t=(bg.currentTime||0); let lo=0,hi=MIX.items.length-1,ans=null; while(lo<=hi){const m=(lo+hi)>>1; if(MIX.items[m].t<=t){ans=MIX.items[m];lo=m+1;} else hi=m-1;} return ans;}
 function pickSeq(pool,targetSec){const seq=[]; let t=0; const recent=[]; const w=pool.map(i=>WEIGHT[stars(i)]); const tw=w.reduce((a,b)=>a+b,0);
-  const est=i=>{const a=AFILE[i], d=a.e-a.s; return (d+gapFor(d))*S.set.lrep+0.6;};
+  const est=i=>{const a=AFILE[i], d=a.e-a.s; return (d+gapFor(d))*S.set.lrep+0.25;};
   let guard=0; while(t<targetSec&&guard++<5000){let x=Math.random()*tw, k=0; for(;k<pool.length;k++){x-=w[k]; if(x<=0) break;} const i=pool[Math.min(k,pool.length-1)];
     if(pool.length>4&&recent.includes(i)) continue; seq.push(i); t+=est(i); recent.push(i); if(recent.length>Math.min(4,pool.length-1)) recent.shift();}
   return seq;}
@@ -448,9 +471,9 @@ async function buildMix(){ if(building) return; building=true; render(); stopFg(
     const byFile={}; need.forEach(i=>{(byFile[AFILE[i].f]=byFile[AFILE[i].f]||[]).push(i);});
     const clips={}; let fi=0; const files=Object.keys(byFile);
     for(const f of files){ fi++; const b=$('#buildbtn'); if(b) b.textContent=`Przygotowuję… ${Math.round(fi/files.length*100)}%`;
-      const ab=await decodeFile(f,16000); const ch=ab.getChannelData(0), sr=ab.sampleRate; SR=sr;
+      const ab=await decodeFile(f,FSR); const ch=ab.getChannelData(0), sr=ab.sampleRate; SR=sr;
       byFile[f].forEach(i=>{const a=AFILE[i]; const s=Math.floor(a.s*sr), e=Math.min(ch.length,Math.floor(a.e*sr)); const c=new Int16Array(e-s); for(let k=0;k<c.length;k++){const v=Math.max(-1,Math.min(1,ch[s+k])); c[k]=v<0?v*32768:v*32767;} clips[i]=c;}); }
-    const tail=Math.floor(SR*0.6); const gapOf=i=>Math.floor(SR*gapFor(clips[i].length/SR)); let total=0; const items=[];
+    const tail=Math.floor(SR*0.25); const gapOf=i=>Math.floor(SR*gapFor(clips[i].length/SR)); let total=0; const items=[];
     seq.forEach(i=>{items.push({i,t:total/SR}); for(let r=0;r<S.set.lrep;r++) total+=clips[i].length+gapOf(i); total+=tail;});
     const data=new Int16Array(total); let pos=0; seq.forEach(i=>{for(let r=0;r<S.set.lrep;r++){data.set(clips[i],pos); pos+=clips[i].length+gapOf(i);} pos+=tail;});
     const blob=wavBlob(data,SR);
@@ -464,35 +487,65 @@ async function buildMix(){ if(building) return; building=true; render(); stopFg(
   building=false; render();}
 function pauseBg(){if(MIX&&!bg.paused){bg.pause();}}
 let lsAcc=0;
-bg.addEventListener('timeupdate',()=>{const ct=bg.currentTime; let d=ct-lastCT; if(d<0) d=ct; d/=(bg.playbackRate||1); if(d>0&&d<20){lsAcc+=d; const r=dayRec(); r.ls=(r.ls||0)+d; if(lsAcc>=60){lsAcc-=60; addXP(1);} }
+bg.addEventListener('timeupdate',()=>{const ct=bg.currentTime; let d=ct-lastCT; if(d<0) d=ct; d/=(bg.playbackRate||1); if(d>0&&d<20){lsAcc+=d; if(lsAcc>=5){const x=lsAcc; lsAcc=0; track('ls',x);} }
   lastCT=ct; if(V.tab==='listen'&&!T&&V.view!=='stats'){const c=curItem(); const a=$('#nowno'); if(a&&c&&a.dataset.i!=String(c.i)){a.dataset.i=c.i; a.textContent=D[c.i][1]; $('#nowpl').textContent=D[c.i][3]; $('#nowst').innerHTML=starStr(stars(c.i));} const ey=document.querySelector('.now .eyebrow'); if(ey) ey.textContent=`Teraz gra · ${fmtT(ct/S.set.lspeed)} / ${fmtT(MIX.dur/S.set.lspeed)}`;}});
 bg.addEventListener('play',()=>{lastCT=bg.currentTime; if(bg.playbackRate!==S.set.lspeed){bg.playbackRate=S.set.lspeed; setPitch(bg);} if(V.tab==='listen') render();});
 bg.addEventListener('playing',()=>{if(bg.playbackRate!==S.set.lspeed) bg.playbackRate=S.set.lspeed;});
-bg.addEventListener('pause',()=>{save(); if(V.tab==='listen') render();});
+bg.addEventListener('pause',()=>{if(lsAcc>0){const x=lsAcc; lsAcc=0; track('ls',x);} save(); if(V.tab==='listen') render();});
 
 /* ---------- STATS ---------- */
-const BADGES=[['s3','3 dni serii',()=>streak().cur>=3],['s7','7 dni serii',()=>streak().cur>=7],['s30','30 dni serii',()=>streak().cur>=30],
- ['u1','Pierwsza paczka',()=>Object.keys(S.u).length>=1],['c100','100 zdań w nauce',()=>learningSet().length>=100],['c500','500 zdań w nauce',()=>learningSet().length>=500],['c1201','Cała lista w nauce',()=>learningSet().length>=N],
- ['f50','50 zdań na 5★',()=>count5()>=50],['f300','300 zdań na 5★',()=>count5()>=300],['f1201','Wszystko na 5★',()=>count5()>=N],
- ['g1','Setka opanowana',()=>Array.from({length:NG},(_,g)=>groupInfo(g).pct>=.9).some(Boolean)],['l60','Godzina słuchania',()=>totalListen()>=3600]];
-const count5=()=>Object.values(S.s).filter(x=>x.r>=5).length;
+const IC={
+ s:'<svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z" fill="currentColor"/></svg>',
+ c:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>',
+ f:'<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="currentColor"/></svg>',
+ l:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5" fill="currentColor"/><rect x="17" y="14" width="4" height="6" rx="1.5" fill="currentColor"/></svg>',
+ r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>',
+ g:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" opacity=".45"/></svg>',
+ h:'<svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/></svg>'};
+const count3=()=>Object.values(S.s).filter(x=>x&&x.r>=3).length;
 const totalListen=()=>Object.values(S.day).reduce((a,r)=>a+(r.ls||0),0);
-function checkBadges(){BADGES.forEach(([id,name,f])=>{if(!S.bdg[id]&&f()){S.bdg[id]=today(); toast('Odznaka: '+name);}});}
+const totalReps=()=>Object.values(S.day).reduce((a,r)=>a+(r.rp||0),0);
+const bestStreak=()=>Math.max(S.best||0,streak().cur);
+const groupsDone=()=>Array.from({length:NG},(_,g)=>groupInfo(g).pct>=.9).filter(Boolean).length;
+const hardDays=()=>Object.values(S.day).filter(r=>r.hd).length;
+// [id, kategoria, nazwa, wartość, próg]
+const BCAT=[['s','Seria'],['c','Nauka'],['f','Opanowane (3★)'],['l','Słuchanie'],['r','Powtórzenia'],['g','Setki'],['h','Wyzwania']];
+const BADGES=[
+ ['s3','s','3 dni z rzędu',bestStreak,3],['s7','s','Tydzień z rzędu',bestStreak,7],['s14','s','2 tygodnie',bestStreak,14],['s30','s','Miesiąc z rzędu',bestStreak,30],['s60','s','60 dni',bestStreak,60],['s100','s','100 dni',bestStreak,100],
+ ['u1','c','Pierwsza paczka',()=>Object.keys(S.u).length,1],['c100','c','100 zdań w nauce',()=>learningSet().length,100],['c300','c','300 zdań w nauce',()=>learningSet().length,300],['c600','c','Połowa listy',()=>learningSet().length,600],['c1201','c','Cała lista w nauce',()=>learningSet().length,N],
+ ['f50','f','50 opanowanych',count3,50],['f200','f','200 opanowanych',count3,200],['f500','f','500 opanowanych',count3,500],['f1201','f','Wszystko opanowane',count3,N],
+ ['l60','l','Godzina słuchania',()=>totalListen()/60,60],['l600','l','10 godzin',()=>totalListen()/60,600],['l1500','l','25 godzin',()=>totalListen()/60,1500],['l3000','l','50 godzin',()=>totalListen()/60,3000],['l6000','l','100 godzin',()=>totalListen()/60,6000],
+ ['r1k','r','1 000 powtórzeń',totalReps,1000],['r5k','r','5 000 powtórzeń',totalReps,5000],['r10k','r','10 000 powtórzeń',totalReps,10000],['r25k','r','25 000 powtórzeń',totalReps,25000],
+ ['g1','g','Pierwsza setka',groupsDone,1],['g6','g','Pół listy opanowane',groupsDone,6],['g12','g','Wszystkie setki',groupsDone,12],
+ ['hd1','h','Dzień na Hard',hardDays,1],['hd7','h','7 dni na Hard',hardDays,7],['hd30','h','30 dni na Hard',hardDays,30]];
+function checkBadges(){BADGES.forEach(([id,,name,f,tg])=>{if(!S.bdg[id]&&f()>=tg){S.bdg[id]=today(); toast('Odznaka: '+name);}});}
+const PRESETS=[{id:'easy',name:'Easy',gl:30,gr:100,ng:10},{id:'medium',name:'Medium',gl:60,gr:200,ng:30},{id:'hard',name:'Hard',gl:120,gr:300,ng:50}];
+const nf=x=>Math.floor(x).toLocaleString('pl-PL');
 function statsView(){const st=streak(); const r=dayRec(); const t=today();
-  const totalT=Object.values(S.day).reduce((a,x)=>a+(x.t||0),0); const ratedN=Object.values(S.s).filter(x=>x.r).length; const avg=ratedN?Object.values(S.s).reduce((a,x)=>a+(x.r||0),0)/ratedN:0;
-  let cells=''; const start=t-83-((new Date(t*86400000).getUTCDay()+6)%7)+6; // align weeks
-  for(let n=t-83;n<=t;n++){const x=S.day[dkey(n)]; const lv=!x||!x.xp?'':x.xp>=S.goal?'h3':x.xp>=S.goal/2?'h2':'h1'; cells+=`<i class="${lv} ${n===t?'today':''}" title="${dkey(n)}: ${x?x.xp:0} pkt"></i>`;}
+  const totalT=Object.values(S.day).reduce((a,x)=>a+(x.t||0),0); const ratedN=Object.values(S.s).filter(x=>x&&x.r).length; const avg=ratedN?Object.values(S.s).reduce((a,x)=>a+((x&&x.r)||0),0)/ratedN:0;
+  let cells='';
+  for(let n=t-83;n<=t;n++){const x=S.day[dkey(n)]; const pl=x?Math.min(1,(x.ls||0)/(S.gl*60)):0, pr=x?Math.min(1,(x.rp||0)/S.gr):0;
+    const lv=!x?'':x.ok?'h3':(pl+pr)/2>=.5?'h2':(x.ls||x.rp)?'h1':''; cells+=`<i class="${lv} ${n===t?'today':''}" title="${dkey(n)}: ${x?Math.floor((x.ls||0)/60):0} min, ${x?x.rp||0:0} powt."></i>`;}
+  const ml=Math.floor((r.ls||0)/60), pl=Math.min(1,(r.ls||0)/(S.gl*60)), pr=Math.min(1,(r.rp||0)/S.gr);
+  const gotN=BADGES.filter(([id])=>S.bdg[id]).length;
+  const badges=BCAT.map(([c,cn])=>`<div class="stack" style="gap:6px"><div class="eyebrow">${cn}</div><div class="badges">${BADGES.filter(x=>x[1]===c).map(([id,,name,f,tg])=>{const got=S.bdg[id]!=null; const v=Math.min(tg,f());
+    return `<div class="bdg ${got?'got':''}"><span class="ic">${IC[c]}</span><span class="bt"><b>${esc(name)}</b><span class="muted small">${got?'zdobyta '+dkey(S.bdg[id]).split('-').reverse().slice(0,2).join('.'):`${nf(v)} / ${nf(tg)}`}</span>${got?'':`<span class="bp"><i style="width:${v/tg*100}%"></i></span>`}</span></div>`;}).join('')}</div></div>`).join('');
   return `<div class="stack"><div class="between"><button class="ghost back" data-a="closestats">‹ Wróć</button></div><h1>Statystyki</h1>
-  <div class="grid2"><div class="tile"><span class="eyebrow">Seria</span><b>${st.cur} ${st.cur===1?'dzień':'dni'}</b><span class="muted small">${st.todayMet?'dzisiaj zaliczone':'zrób dziś cel, żeby nie stracić serii'}</span></div><div class="tile"><span class="eyebrow">Najlepsza seria</span><b>${Math.max(S.best,st.cur)}</b><span class="muted small">dni z rzędu</span></div></div>
-  <div class="card stack"><div class="between"><h3>Dziś</h3><span class="pct">${r.xp}/${S.goal} pkt</span></div><div class="bar"><i style="width:${Math.min(100,r.xp/S.goal*100)}%;background:var(--accent)"></i></div>
-  <div class="row small muted" style="gap:14px"><span>Oceny: <b>${r.t||0}</b></span><span>Nowe zdania: <b>${r.nw||0}</b>/${S.newGoal}</span><span>Słuchanie: <b>${Math.round((r.ls||0)/60)}</b> min</span></div>
-  <span class="muted small">Punkty: 1 za każdą ocenę w teście, 2 za każde nowe zdanie, 1 za każdą minutę słuchania.</span></div>
-  <div class="card stack"><h3>Ostatnie 12 tygodni</h3><div class="heat">${cells}</div><div class="row small muted" style="gap:10px"><span>mniej</span><i style="width:12px;height:12px;border-radius:3px;background:var(--sunk);display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 30%,var(--sunk));display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 60%,var(--sunk));display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:var(--accent);display:inline-block"></i><span>cel zdobyty</span></div></div>
-  <div class="grid2"><div class="tile"><span class="eyebrow">W nauce</span><b>${learningSet().length}</b><span class="muted small">z ${N} zdań</span></div><div class="tile"><span class="eyebrow">Na 5★</span><b>${count5()}</b><span class="muted small">opanowane</span></div>
-  <div class="tile"><span class="eyebrow">Średnia ocena</span><b>${avg.toFixed(1)}★</b><span class="muted small">${ratedN} ocenionych</span></div><div class="tile"><span class="eyebrow">Słuchanie</span><b>${Math.round(totalListen()/60)} min</b><span class="muted small">${totalT} ocen łącznie</span></div></div>
-  <div class="card stack"><h3>Cele</h3><div class="row"><span class="muted small" style="min-width:110px">Punkty dziennie</span>${[30,50,80,120].map(g=>`<button class="chip" data-a="goal" data-v="${g}" aria-pressed="${S.goal===g}">${g}</button>`).join('')}</div>
-  <div class="row"><span class="muted small" style="min-width:110px">Nowe zdania</span>${[10,20,30].map(g=>`<button class="chip" data-a="newgoal" data-v="${g}" aria-pressed="${S.newGoal===g}">${g}</button>`).join('')}</div></div>
-  <div class="card stack"><h3>Odznaki</h3><div class="badges">${BADGES.map(([id,name])=>`<div class="bdg ${S.bdg[id]?'got':''}"><span class="ic">${S.bdg[id]?'✓':'·'}</span><span>${esc(name)}</span></div>`).join('')}</div></div>
+  <div class="grid2"><div class="tile"><span class="eyebrow">Seria</span><b>${st.cur} ${st.cur===1?'dzień':'dni'}</b><span class="muted small">${st.todayMet?'dzisiaj zaliczone':'zrób dziś oba cele, żeby nie stracić serii'}</span></div><div class="tile"><span class="eyebrow">Najlepsza seria</span><b>${bestStreak()}</b><span class="muted small">dni z rzędu</span></div></div>
+  <div class="card stack"><div class="between"><h3>Dziś</h3><span class="chipst ${r.ok?'done':'learn'}">${r.ok?'cel zaliczony':'w trakcie'}</span></div>
+  <div class="gbar"><span>Słuchanie</span><div class="bar"><i style="width:${pl*100}%;background:${pl>=1?'var(--good)':'var(--accent)'}"></i></div><b>${ml}/${S.gl} min</b></div>
+  <div class="gbar"><span>Powtórzenia</span><div class="bar"><i style="width:${pr*100}%;background:${pr>=1?'var(--good)':'var(--fjord)'}"></i></div><b>${r.rp||0}/${S.gr}</b></div>
+  <div class="row small muted" style="gap:14px"><span>Nowe zdania: <b>${r.nw||0}</b>/${S.newGoal}</span><span>Oceny w teście: <b>${r.t||0}</b></span></div>
+  <span class="muted small">Powtórzenie to każde odsłuchane zdanie w Nauce i w teście oraz każda ocena w teście. Minuty to cały czas słuchania: mieszanka w tle i zdania w Nauce. Seria rośnie w dni, w których zrobisz oba cele.</span></div>
+  <div class="card stack"><h3>Ostatnie 12 tygodni</h3><div class="heat">${cells}</div><div class="row small muted" style="gap:10px"><span>mniej</span><i style="width:12px;height:12px;border-radius:3px;background:var(--sunk);display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 30%,var(--sunk));display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 60%,var(--sunk));display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:var(--accent);display:inline-block"></i><span>cel zaliczony</span></div></div>
+  <div class="grid2"><div class="tile"><span class="eyebrow">W nauce</span><b>${learningSet().length}</b><span class="muted small">z ${N} zdań</span></div><div class="tile"><span class="eyebrow">Opanowane 3★</span><b>${count3()}</b><span class="muted small">średnia ${avg.toFixed(1)}★</span></div>
+  <div class="tile"><span class="eyebrow">Słuchanie</span><b>${totalListen()>=36000?(totalListen()/3600).toFixed(0)+' h':nf(totalListen()/60)+' min'}</b><span class="muted small">łącznie</span></div><div class="tile"><span class="eyebrow">Powtórzenia</span><b>${nf(totalReps())}</b><span class="muted small">${nf(totalT)} ocen w testach</span></div></div>
+  <div class="card stack"><h3>Cel dzienny</h3><div class="grid3">${PRESETS.map(p=>`<button class="tile preset" data-a="preset" data-p="${p.id}" aria-pressed="${S.gl===p.gl&&S.gr===p.gr}"><span class="eyebrow">${p.name}</span><b>~${p.ng} zdań</b><span class="muted small">${p.gl} min<br>${p.gr} powt.</span></button>`).join('')}</div>
+  <div class="row"><span class="muted small" style="min-width:96px">Słuchanie</span>${[30,60,120,180].map(g=>`<button class="chip" data-a="gl" data-v="${g}" aria-pressed="${S.gl===g}">${g} min</button>`).join('')}</div>
+  <div class="row"><span class="muted small" style="min-width:96px">Powtórzenia</span>${[100,200,300].map(g=>`<button class="chip" data-a="gr" data-v="${g}" aria-pressed="${S.gr===g}">${g}</button>`).join('')}</div>
+  <div class="row"><span class="muted small" style="min-width:96px">Nowe zdania</span>${[10,30,50,100].map(g=>`<button class="chip" data-a="newgoal" data-v="${g}" aria-pressed="${S.newGoal===g}">${g}</button>`).join('')}</div>
+  <span class="muted small">Około 100 nowych zdań dziennie: 180 min i 300 powtórzeń, najlepiej słuchając w tempie 1,25×.</span></div>
+  <div class="card stack"><div class="between"><h3>Odznaki</h3><span class="muted small">${gotN} z ${BADGES.length}</span></div>${badges}</div>
   <div class="card stack"><h3>Kopia zapasowa</h3><span class="muted small">Postęp i skojarzenia są zapisane tylko w telefonie. Zapisz kopię w Plikach lub na iCloud Drive, zwłaszcza przed aktualizacją aplikacji.${S.lastBk!=null?` Ostatnia kopia: ${t-S.lastBk===0?'dzisiaj':t-S.lastBk===1?'wczoraj':(t-S.lastBk)+' dni temu'}.`:' Nie masz jeszcze żadnej kopii.'}</span>
   <button class="primary" data-a="backup">Zapisz kopię (Pliki / iCloud)</button>
   <div class="row"><button data-a="importfile">Wczytaj z pliku</button><button class="ghost" data-a="export">Kopiuj jako tekst</button><button class="ghost" data-a="importshow">Wklej tekst</button></div>
@@ -521,8 +574,8 @@ const A={
     for(;i<ui.b&&alive(id);i++){V.cur=i; render(); const b=document.getElementById('repbtn'); if(b){b.textContent='■ Stop'; b.dataset.on='1';}
       for(let k=0;k<S.set.reps&&alive(id);k++){document.querySelectorAll('#reps i').forEach((x,j)=>x.classList.toggle('on',j<=k)); const dur=await playOne(i,id); if(!alive(id)) break; await sleep(Math.max(900,(dur||2)*1000+700),id);} }
     if(alive(id)){releaseWake(); V.cur=ui.b-1; render(); toast('Koniec paczki');}},
-  startunit:d=>{const u=+d.u; if(!S.u[u]){S.u[u]=today(); const ui=unitInfo(u); addXP(2*ui.n,'nw',ui.n);} toast('Paczka dodana do nauki'); render();},
-  testunit:d=>{const u=+d.u; if(!S.u[u]){S.u[u]=today(); const ui=unitInfo(u); addXP(2*ui.n,'nw',ui.n);} const ui=unitInfo(u); const l=[]; for(let i=ui.a;i<ui.b;i++) l.push(i); startTest(shuffle(l),`Zdania ${ui.a+1}–${ui.b}`,{tab:V.tab,view:V.view});},
+  startunit:d=>{const u=+d.u; if(!S.u[u]){S.u[u]=today(); const ui=unitInfo(u); addNew(ui.n);} toast('Paczka dodana do nauki'); render();},
+  testunit:d=>{const u=+d.u; if(!S.u[u]){S.u[u]=today(); const ui=unitInfo(u); addNew(ui.n);} const ui=unitInfo(u); const l=[]; for(let i=ui.a;i<ui.b;i++) l.push(i); startTest(shuffle(l),`Zdania ${ui.a+1}–${ui.b}`,{tab:V.tab,view:V.view});},
   startdue:()=>startTest(dueList().slice(0,40),'Powtórka na dziś',{tab:'test',view:'home'}),
   startweak:()=>startTest(shuffle(learningSet().filter(i=>stars(i)>0&&stars(i)<=2)).slice(0,30),'Słabe zdania',{tab:'test',view:'home'}),
   startmix:()=>startTest(shuffle(learningSet()).slice(0,20),'Losowy mix',{tab:'test',view:'home'}),
@@ -536,7 +589,8 @@ const A={
   buildmix:()=>buildMix(),
   bgtoggle:()=>{if(!MIX) return; if(bg.paused){stopFg(); bg.play().catch(()=>{});} else bg.pause();},
   bgstop:()=>{bg.pause(); if(MIX&&MIX.url) URL.revokeObjectURL(MIX.url); MIX=null; bg.removeAttribute('src'); save(); render();},
-  goal:d=>{S.goal=+d.v; save(); render();}, newgoal:d=>{S.newGoal=+d.v; save(); render();},
+  gl:d=>{S.gl=+d.v; save(); checkDay(); render();}, gr:d=>{S.gr=+d.v; save(); checkDay(); render();}, newgoal:d=>{S.newGoal=+d.v; save(); render();},
+  preset:d=>{const p=PRESETS.find(x=>x.id===d.p); if(!p) return; S.gl=p.gl; S.gr=p.gr; S.newGoal=p.ng; save(); checkDay(); render(); toast(`Cel: ${p.name}`);},
   export:()=>{const txt=JSON.stringify(S); const box=$('#bk'); box.innerHTML=`<textarea id="bktxt" readonly>${esc(txt)}</textarea><span class="muted small">Skopiowane. Wklej to w mailu albo notatce.</span>`;
     const ta=$('#bktxt'); try{navigator.clipboard.writeText(txt).then(()=>toast('Kopia skopiowana'),()=>{ta.select();toast('Zaznacz i skopiuj tekst');});}catch(e){ta.select();}},
   importshow:()=>{$('#bk').innerHTML=`<textarea id="imtxt" placeholder="Wklej tu skopiowaną kopię"></textarea><button class="primary" data-a="import">Wczytaj i zastąp obecny postęp</button>`;},
