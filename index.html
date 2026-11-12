@@ -141,6 +141,13 @@ nav.tabs .badge{position:absolute;margin-left:22px;margin-top:-2px;background:va
 .bt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
 .bp{display:block;height:4px;border-radius:2px;background:var(--sunk);overflow:hidden;margin-top:2px}.bp i{display:block;height:100%;background:var(--accent)}
 .bdg .ic svg{width:17px;height:17px}
+.tile.hs{text-align:left;width:100%}
+.hslist{display:flex;flex-direction:column;gap:4px;margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
+.hslist>span{display:grid;grid-template-columns:18px 1fr;column-gap:6px;font-size:.85rem;align-items:baseline}
+.hslist i{font-style:normal;font-weight:800;color:var(--accent);grid-row:span 2}
+.hslist em{font-style:normal;font-weight:700} .hslist small{color:var(--muted);font-size:.75rem}
+.hslist .hnow em{color:var(--good)}
+.hsmore{margin-top:2px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .tile.preset{text-align:left;min-height:0;padding:10px}
 .tile.preset b{font-size:1.15rem}
@@ -249,6 +256,8 @@ function checkDay(r){r=r||dayRec();
   if(!r.okR&&doneR(r)){r.okR=1; if(!doneL(r)) toast('Powtórzenia na dziś zaliczone');}
   if(!r.ok&&doneL(r)&&doneR(r)){r.ok=1; const st=streak(); if(st.cur>S.best) S.best=st.cur; celebrate('Cel dzienny zaliczony!',`Seria: ${st.cur} ${st.cur===1?'dzień':'dni'}`);}
   if(r.ok&&S.gl>=120&&S.gr>=300) r.hd=1;
+  const tk=dkey(today()); [['ls','recL','słuchania'],['rp','recR','powtórzeń']].forEach(([f,fl,nm])=>{if(r[fl]) return; const prev=Object.entries(S.day).filter(([k])=>k!==tk).reduce((m,[,x])=>Math.max(m,x[f]||0),0);
+    if(prev>0&&(r[f]||0)>prev){r[fl]=1; toast(`Nowy rekord ${nm}!`);}});
   checkBadges(); save(); header();}
 function addNew(n){const r=dayRec(); r.nw=(r.nw||0)+n; checkBadges(); save(); header();}
 function streak(){const t=today(); let cur=0; let n=t; const met=k=>{const r=S.day[dkey(k)]; return !!(r&&r.ok);};
@@ -521,6 +530,14 @@ const BADGES=[
 function checkBadges(){BADGES.forEach(([id,,name,f,tg])=>{if(!S.bdg[id]&&f()>=tg){S.bdg[id]=today(); toast('Odznaka: '+name);}});}
 const PRESETS=[{id:'easy',name:'Easy',gl:30,gr:100,ng:10},{id:'medium',name:'Medium',gl:60,gr:200,ng:30},{id:'hard',name:'Hard',gl:120,gr:300,ng:50}];
 const nf=x=>Math.floor(x).toLocaleString('pl-PL');
+const fmtDay=k=>{const [y,m,d]=k.split('-'); return `${+d}.${m}.${y}`;};
+const fmtMin=sec=>{const m=Math.floor(sec/60); return m>=60?`${Math.floor(m/60)} h ${m%60} min`:`${m} min`;};
+// top 3 dni wg pola: [[data, wartość], ...]
+function topDays(f,n=3){return Object.entries(S.day).map(([k,r])=>[k,r[f]||0]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1)).slice(0,n);}
+function recCard(f,title,fmt){const top=topDays(f), open=V.hs===f, tk=dkey(today());
+  const best=top[0];
+  return `<button class="tile hs" data-a="hs" data-f="${f}" aria-expanded="${open}"><span class="eyebrow">${title}</span>${best?`<b>${fmt(best[1])}</b><span class="muted small">${best[0]===tk?'dzisiaj':fmtDay(best[0])}</span>`:'<b>—</b><span class="muted small">jeszcze brak</span>'}
+    ${open?`<span class="hslist">${[0,1,2].map(j=>{const x=top[j]; return `<span class="${x&&x[0]===tk?'hnow':''}"><i>${j+1}</i>${x?`<em>${fmt(x[1])}</em><small>${x[0]===tk?'dzisiaj':fmtDay(x[0])}</small>`:'<em class="muted">—</em><small></small>'}</span>`;}).join('')}</span>`:`<span class="muted small hsmore">Top 3 ›</span>`}</button>`;}
 function statsView(){const st=streak(); const r=dayRec(); const t=today();
   const totalT=Object.values(S.day).reduce((a,x)=>a+(x.t||0),0); const ratedN=Object.values(S.s).filter(x=>x&&x.r).length; const avg=ratedN?Object.values(S.s).reduce((a,x)=>a+((x&&x.r)||0),0)/ratedN:0;
   let cells='';
@@ -537,6 +554,7 @@ function statsView(){const st=streak(); const r=dayRec(); const t=today();
   <div class="gbar"><span>Powtórzenia</span><div class="bar"><i style="width:${pr*100}%;background:${pr>=1?'var(--good)':'var(--fjord)'}"></i></div><b>${r.rp||0}/${S.gr}</b></div>
   <div class="row small muted" style="gap:14px"><span>Nowe zdania: <b>${r.nw||0}</b>/${S.newGoal}</span><span>Oceny w teście: <b>${r.t||0}</b></span></div>
   <span class="muted small">Powtórzenie to każde odsłuchane zdanie w Nauce i w teście oraz każda ocena w teście. Minuty to cały czas słuchania: mieszanka w tle i zdania w Nauce. Seria rośnie w dni, w których zrobisz oba cele.</span></div>
+  <div class="stack" style="gap:8px"><h3>Rekordy dnia</h3><div class="grid2" style="align-items:start">${recCard('ls','Najdłuższe słuchanie',fmtMin)}${recCard('rp','Najwięcej powtórzeń',v=>nf(v))}</div></div>
   <div class="card stack"><h3>Ostatnie 12 tygodni</h3><div class="heat">${cells}</div><div class="row small muted" style="gap:10px"><span>mniej</span><i style="width:12px;height:12px;border-radius:3px;background:var(--sunk);display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 30%,var(--sunk));display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 60%,var(--sunk));display:inline-block"></i><i style="width:12px;height:12px;border-radius:3px;background:var(--accent);display:inline-block"></i><span>cel zaliczony</span></div></div>
   <div class="grid2"><div class="tile"><span class="eyebrow">W nauce</span><b>${learningSet().length}</b><span class="muted small">z ${N} zdań</span></div><div class="tile"><span class="eyebrow">Opanowane 3★</span><b>${count3()}</b><span class="muted small">średnia ${avg.toFixed(1)}★</span></div>
   <div class="tile"><span class="eyebrow">Słuchanie</span><b>${totalListen()>=36000?(totalListen()/3600).toFixed(0)+' h':nf(totalListen()/60)+' min'}</b><span class="muted small">łącznie</span></div><div class="tile"><span class="eyebrow">Powtórzenia</span><b>${nf(totalReps())}</b><span class="muted small">${nf(totalT)} ocen w testach</span></div></div>
@@ -590,6 +608,7 @@ const A={
   bgtoggle:()=>{if(!MIX) return; if(bg.paused){stopFg(); bg.play().catch(()=>{});} else bg.pause();},
   bgstop:()=>{bg.pause(); if(MIX&&MIX.url) URL.revokeObjectURL(MIX.url); MIX=null; bg.removeAttribute('src'); save(); render();},
   gl:d=>{S.gl=+d.v; save(); checkDay(); render();}, gr:d=>{S.gr=+d.v; save(); checkDay(); render();}, newgoal:d=>{S.newGoal=+d.v; save(); render();},
+  hs:d=>{V.hs=V.hs===d.f?null:d.f; render();},
   preset:d=>{const p=PRESETS.find(x=>x.id===d.p); if(!p) return; S.gl=p.gl; S.gr=p.gr; S.newGoal=p.ng; save(); checkDay(); render(); toast(`Cel: ${p.name}`);},
   export:()=>{const txt=JSON.stringify(S); const box=$('#bk'); box.innerHTML=`<textarea id="bktxt" readonly>${esc(txt)}</textarea><span class="muted small">Skopiowane. Wklej to w mailu albo notatce.</span>`;
     const ta=$('#bktxt'); try{navigator.clipboard.writeText(txt).then(()=>toast('Kopia skopiowana'),()=>{ta.select();toast('Zaznacz i skopiuj tekst');});}catch(e){ta.select();}},
