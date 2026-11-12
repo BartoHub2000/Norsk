@@ -114,11 +114,15 @@ nav.tabs .badge{position:absolute;margin-left:22px;margin-top:-2px;background:va
 .drill .big{font-size:1.4rem;font-weight:550;line-height:1.35}
 .drill .ans{font-size:1.35rem;font-weight:600;color:var(--fjord);line-height:1.35}
 .reps{display:flex;gap:6px} .reps i{width:22px;height:6px;border-radius:3px;background:var(--sunk)} .reps i.on{background:var(--accent)}
-.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.rate button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;min-height:92px;text-align:center}
+.rate{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rate button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;min-height:84px;text-align:center;position:relative}
+.rate button .n{font-family:var(--fd);font-weight:800;font-size:1.35rem;line-height:1}.rate button .n i{font-style:normal;color:var(--star);font-size:.9rem;margin-left:1px}
+.rate button.was{box-shadow:inset 0 0 0 2px var(--muted)}.rate button.was::after{content:'poprzednio';position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:.58rem;background:var(--muted);color:var(--bg);padding:1px 5px;border-radius:6px;white-space:nowrap}
+.prevr{font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.shead3{display:flex;align-items:center;gap:8px;margin-top:6px}
 .rate button .d{font-size:.7rem;color:var(--muted);line-height:1.2}
 .rate button .s{font-size:1.25rem;color:var(--star);line-height:1}
-.rate button .k{font-family:var(--fd);font-weight:750;font-size:.9rem;line-height:1.15}
+.rate button .k{font-size:.66rem;font-weight:600;line-height:1.15;color:var(--muted)}
 .legend{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:.8rem;color:var(--muted)}
 .legend b{color:var(--star);font-weight:700}
 .prog{height:4px;background:var(--sunk);border-radius:2px;overflow:hidden} .prog i{display:block;height:100%;background:var(--accent)}
@@ -211,9 +215,8 @@ const AFILE={}; AF.forEach(x=>x.segs.forEach((s,k)=>AFILE[x.from-1+k]={f:x.f,s:s
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const STAR='★';
-const LABELS=['','Nie umiem','Umiem trochę','Umiem doskonale'];
-const LDESC=['','nie pamiętam albo mówię z dużymi błędami','powiem, ale z namysłem albo z drobnym błędem','mówię od razu i poprawnie'];
-const SHORT=['','nie umiem','trochę','doskonale'];
+const LABELS=['','Nie umiem','Coś pamiętam','Mam spore braki','Do doszlifowania','Znam doskonale'];
+const SHORT=['','nie umiem','coś pamiętam','spore braki','do doszlifowania','doskonale'];
 
 /* ---------- dates ---------- */
 const dnum=(d=new Date())=>Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000);
@@ -222,7 +225,7 @@ const today=()=>dnum();
 
 /* ---------- state ---------- */
 const KEY='norsk1200.v2';
-const APPVER='6';
+const APPVER='7';
 const DEF={v:2,s:{},u:{},day:{},best:0,set:{rate:1,reps:5,tr:true,lmin:20,lrep:1,lpool:'all',lspeed:1,lmode:'listen'},bdg:{},m:{}};
 // skojarzenia z naszych rozmów, do edycji w aplikacji (klucz = forma podstawowa)
 const SEED_M={'trenge':'trening: żeby coś umieć, potrzebujesz treningu','framme':'brama: jesteś na miejscu, kiedy stoisz pod bramą','glemme':'gleba + mmm: zakopałem coś w glebie i… mmm, zapomniałem gdzie',
@@ -242,7 +245,8 @@ function normState(){S.set=Object.assign({},DEF.set,S.set||{}); S.bdg=S.bdg||{};
   if(!S.mSeed){for(const k in SEED_M) if(!S.m[k]) S.m[k]=SEED_M[k]; S.mSeed=1;}
   if(!S.v3){ // z punktów i 5 gwiazdek na dwa cele i 3 gwiazdki
     const og=S.goal||50; for(const k in S.day){const r=S.day[k]; if(r.xp!=null&&r.xp>=og) r.ok=1; if(r.rp==null) r.rp=r.t||0;}
-    for(const k in S.s){const x=S.s[k]; if(x&&x.r) x.r=x.r<=2?1:x.r<=4?2:3;} delete S.goal; S.v3=1;}
+    delete S.goal; S.v3=1; S.v7=1;}
+  if(!S.v7){for(const k in S.s){const x=S.s[k]; if(x&&x.r) x.r=({1:2,2:3,3:5})[x.r]||x.r;} S.v7=1;}
   if(!S.v6){ // active recall osobno + jeden cel z progami Easy/Medium/Hard
     for(const k in S.day){const r=S.day[k]; if(r.rc==null){r.rc=r.t||0; r.rp=Math.max(0,(r.rp||0)-(r.t||0));} r.tier=r.ok?Math.max(1,r.tier||0):(r.tier||0);}
     delete S.gl; delete S.gr; delete S.newGoal; S.v6=1;}}
@@ -275,15 +279,15 @@ function streak(){const t=today(); let cur=0; let n=t; const met=k=>{const r=S.d
 
 /* ---------- derived stats ---------- */
 function unitInfo(u){const [a,b]=uRange(u); let sum=0,rated=0,five=0; for(let i=a;i<b;i++){const r=stars(i); sum+=r; if(r)rated++; if(r>=5)five++;}
-  const n=b-a; const pct=sum/(3*n); const st=!started(u)?'new':(rated===n&&Array.from({length:n},(_,k)=>stars(a+k)).every(r=>r>=3)?'done':'learn'); return {n,pct,rated,five,st,a,b};}
-function groupInfo(g){const [a,b]=gRange(g); let sum=0; for(let i=a;i<b;i++) sum+=stars(i); const us=gUnits(g); return {pct:sum/(3*(b-a)),startedN:us.filter(started).length,doneN:us.filter(u=>unitInfo(u).st==='done').length};}
+  const n=b-a; const pct=sum/(5*n); const st=!started(u)?'new':(rated===n&&Array.from({length:n},(_,k)=>stars(a+k)).every(r=>r>=5)?'done':'learn'); return {n,pct,rated,five,st,a,b};}
+function groupInfo(g){const [a,b]=gRange(g); let sum=0; for(let i=a;i<b;i++) sum+=stars(i); const us=gUnits(g); return {pct:sum/(5*(b-a)),startedN:us.filter(started).length,doneN:us.filter(u=>unitInfo(u).st==='done').length};}
 function learningSet(){const out=[]; for(const u in S.u){const [a,b]=uRange(+u); for(let i=a;i<b;i++) out.push(i);} return out.sort((x,y)=>x-y);}
 function dueList(){const t=today(); return learningSet().filter(i=>{const s=sst(i); return !s||!s.r||s.d<=t;}).sort((x,y)=>(stars(x)-stars(y))||(x-y));}
 function nextUnit(){for(let u=0;u<NU;u++) if(!started(u)) return u; return -1;}
 
 /* ---------- SRS ---------- */
 function rate(i,r){const t=today(); const s=S.s[i]||{r:0,d:t,n:0,iv:0}; let iv;
-  if(r===1) iv=0; else if(r===2) iv=Math.max(1,Math.min(4,Math.round((s.iv||1)*1.5))); else iv=Math.max(4,Math.round((s.r===3?(s.iv||2):1.6)*2.5));
+  if(r===1) iv=0; else if(r===2) iv=1; else if(r===3) iv=2; else if(r===4) iv=Math.max(3,Math.round((s.r>=4?(s.iv||2):2)*1.6)); else iv=Math.max(6,Math.round((s.r>=4?(s.iv||3):2.4)*2.5));
   iv=Math.min(iv,90); S.s[i]={r,d:t+iv,n:(s.n||0)+1,iv}; const dr=dayRec(); dr.t=(dr.t||0)+1; track('rc',1);}
 
 /* ---------- audio helpers ---------- */
@@ -359,14 +363,14 @@ function header(){const st=streak(); const r=dayRec(); const tier=r.tier||0;
   const due=dueList().length; const b=$('#tbadge'); b.hidden=!due; b.textContent=due>99?'99+':due;
   const full=T&&!T.inline; ['learn','test','listen'].forEach(t=>$('#tb-'+t).setAttribute('aria-current',V.tab===t&&V.view!=='stats'&&!full?'page':'false'));}
 function go(o){stopFg(); Object.assign(V,o); if(T&&T.inline&&!(V.view==='unit'&&V.u===T.u)) T=null; render(); window.scrollTo(0,0);}
-function starStr(r){r=Math.max(0,Math.min(3,r||0)); return `<span class="stars" aria-label="${r} z 3 gwiazdek">${STAR.repeat(r)}<span class="off">${STAR.repeat(3-r)}</span></span>`;}
+function starStr(r){r=Math.max(0,Math.min(5,r||0)); return `<span class="stars" aria-label="${r} z 5 gwiazdek">${STAR.repeat(r)}<span class="off">${STAR.repeat(5-r)}</span></span>`;}
 const pct=x=>Math.round(x*100)+'%';
 function render(){
   const app=$('#app');
   if(V.view==='stats') app.innerHTML=statsView();
   else if(T&&!T.inline) app.innerHTML=testView();
   else if(V.tab==='learn') app.innerHTML=V.view==='group'?groupView():V.view==='unit'?unitView():learnHome();
-  else if(V.tab==='test') app.innerHTML=testHome();
+  else if(V.tab==='test') app.innerHTML=V.view==='weak'?weakView():testHome();
   else app.innerHTML=listenView();
   header();
 }
@@ -377,7 +381,7 @@ function learnHome(){
   let h=`<div class="stack">`;
   if(nu>=0){const [a,b]=uRange(nu); h+=`<div class="hero"><div class="between"><div><div class="eyebrow">Następna paczka</div><h2>Zdania ${a+1}–${b}</h2></div><span class="chipst">${r.nw||0} nowych dziś</span></div>
     <div class="muted small">${esc(D[a][0])}, ${esc(D[a+1][0])}, ${esc(D[a+2][0])}…</div><button class="primary" data-a="openunit" data-u="${nu}">Ucz się tej paczki</button></div>`;}
-  else h+=`<div class="hero"><h2>Wszystkie paczki są w nauce</h2><p class="muted" style="margin:0">Teraz powtórki i słuchanie, aż wszystko będzie na 3 gwiazdki.</p></div>`;
+  else h+=`<div class="hero"><h2>Wszystkie paczki są w nauce</h2><p class="muted" style="margin:0">Teraz powtórki i słuchanie, aż wszystko będzie na 5 gwiazdek.</p></div>`;
   h+=`<div class="between"><h2>Setki</h2><span class="muted small">${ls.length} zdań w nauce</span></div><div class="glist">`;
   for(let g=0;g<NG;g++){const [a,b]=gRange(g); const gi=groupInfo(g);
     const cells=gUnits(g).map(u=>{const ui=unitInfo(u); const lv=!started(u)?'':ui.pct>=.9?'l4':ui.pct>=.6?'l3':ui.pct>=.3?'l2':'l1'; return `<i class="${lv} ${started(u)&&ui.pct<.3?'st':''}"></i>`;}).join('');
@@ -387,7 +391,7 @@ function learnHome(){
 function groupView(){const g=V.g,[a,b]=gRange(g),gi=groupInfo(g);
   let h=`<div class="stack"><button class="ghost back" data-a="home">‹ Setki</button><div class="between"><div><div class="eyebrow">Setka ${g+1} z ${NG}</div><h1>Zdania ${a+1}–${b}</h1></div><span class="pct" style="font-size:1.2rem">${pct(gi.pct)}</span></div><div class="bar"><i style="width:${gi.pct*100}%"></i></div><div class="stack" style="gap:8px">`;
   gUnits(g).forEach((u,k)=>{const ui=unitInfo(u); const lab={new:'nowa',learn:'w nauce',done:'opanowana'}[ui.st];
-    const avg=ui.rated?Math.round(ui.pct*3):0;
+    const avg=ui.rated?Math.round(ui.pct*5):0;
     h+=`<button class="ucard" data-a="openunit" data-u="${u}"><div style="min-width:0"><div class="between"><b>Paczka ${k+1} · ${ui.a+1}–${ui.b}</b></div><div class="muted small" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(D[ui.a][0])}, ${esc(D[ui.a+1][0])}, ${esc(D[ui.a+2][0])}…</div>${started(u)?`<div class="row" style="gap:10px;margin-top:4px">${starStr(avg)}<span class="pct muted">${pct(ui.pct)}</span></div>`:''}</div><span class="chipst ${ui.st}">${lab}</span></button>`;});
   return h+`</div></div>`;}
 const lc=s=>String(s||'').toLowerCase().trim();
@@ -411,58 +415,70 @@ function unitView(){const u=V.u, ui=unitInfo(u), g=Math.floor(u/10);
     for(let i=ui.a;i<ui.b;i++) h+=sentenceItem(i);
     h+=`</div><div class="stepnext"><button data-a="mode" data-m="rep">Dalej: krok 2, powtarzaj na głos ›</button></div>`;
   }else if(V.mode==='rep'){
-    const i=V.cur>=ui.a&&V.cur<ui.b?V.cur:ui.a;
-    h+=`<div class="row"><span class="muted small">Powtórzeń</span>${[1,2,5].map(n=>`<button class="chip" data-a="reps" data-n="${n}" aria-pressed="${S.set.reps===n}">${n}×</button>`).join('')}</div>${speedCtl()}
-    <div class="drill"><div class="eyebrow">Zdanie ${i+1} z ${ui.b} · słuchaj i powtarzaj w pauzie</div><div class="big">${esc(D[i][1])}</div><div class="muted">${esc(D[i][3])}</div><div class="reps" id="reps">${Array.from({length:S.set.reps},()=>'<i></i>').join('')}</div></div>
-    <div class="row"><button data-a="prev">‹</button><button class="primary" data-a="rep" id="repbtn" style="flex:1">▶ Start od zdania ${i+1}</button><button data-a="next">›</button></div>
-    <div class="stepnext"><button data-a="mode" data-m="rec">Dalej: krok 3, active recall ›</button></div>`;
+    h+=drillHTML(curList())+`
+<div class="stepnext"><button data-a="mode" data-m="rec">Dalej: krok 3, active recall ›</button></div>`;
   }else{
     if(T&&T.inline&&T.u===u) h+=testView();
     else{ const nu=nextUnit(); const rated=ui.rated;
       h+=`<div class="hero"><b>Active recall</b><span class="muted small">Widzisz zdanie po polsku i mówisz je na głos po norwesku, zanim zobaczysz odpowiedź. Potem odkrywasz i od razu oceniasz, jak Ci poszło. To ćwiczenie daje w nauce najwięcej.</span><button class="primary" data-a="startrec">▶ Zacznij: ${ui.n} zdań</button></div>
-      ${rated?`<div class="card stack" style="gap:8px"><div class="between"><b>Twoje oceny w tej paczce</b>${starStr(Math.round(ui.pct*3))}</div><div class="grid2"><button data-a="tab" data-t="listen">Posłuchaj w tle</button>${nu>=0&&nu!==u?`<button data-a="openunit" data-u="${nu}">Następna paczka ›</button>`:'<span></span>'}</div></div>`:''}`;}
+      ${rated?`<div class="card stack" style="gap:8px"><div class="between"><b>Twoje oceny w tej paczce</b>${starStr(Math.round(ui.pct*5))}</div><div class="grid2"><button data-a="tab" data-t="listen">Posłuchaj w tle</button>${nu>=0&&nu!==u?`<button data-a="openunit" data-u="${nu}">Następna paczka ›</button>`:'<span></span>'}</div></div>`:''}`;}
   }
   if(!started(u)) h+=`<p class="note">Paczka wejdzie do nauki, gdy zaczniesz jej słuchać albo zrobisz active recall.</p>`;
+  return h+`</div>`;}
+function curList(){if(V.view==='weak') return V.list||[]; const ui=unitInfo(V.u); return Array.from({length:ui.n},(_,k)=>ui.a+k);}
+function drillHTML(L){const k=Math.max(0,L.indexOf(V.cur)), i=L[k];
+  return `<div class="row"><span class="muted small">Powtórzeń</span>${[1,2,5].map(n=>`<button class="chip" data-a="reps" data-n="${n}" aria-pressed="${S.set.reps===n}">${n}×</button>`).join('')}</div>${speedCtl()}
+    <div class="drill"><div class="between"><div class="eyebrow">Zdanie ${i+1} · ${k+1} z ${L.length} · słuchaj i powtarzaj w pauzie</div>${stars(i)?starStr(stars(i)):''}</div><div class="big">${esc(D[i][1])}</div><div class="muted">${esc(D[i][3])}</div>${mnList(i)}<div class="reps" id="reps">${Array.from({length:S.set.reps},()=>'<i></i>').join('')}</div></div>
+    <div class="row"><button data-a="prev">‹</button><button class="primary" data-a="rep" id="repbtn" style="flex:1">▶ Start od zdania ${i+1}</button><button data-a="next">›</button></div>`;}
+function weakView(){const L=V.list||[];
+  let h=`<div class="stack"><button class="ghost back" data-a="tab" data-t="test">‹ Powtórki</button><div><div class="eyebrow">Nieopanowane</div><h1>Zdania 1–4★</h1></div>
+  <span class="muted small">${L.length} zdań, od najsłabszych. Tu słuchasz i powtarzasz, ocen nie zmieniasz. Oceniasz w active recall.</span>`;
+  if(!L.length) return h+`<div class="hero"><b>Brak zdań z oceną 1–4★</b><span class="muted small">Wszystko, co oceniłeś, masz na 5 gwiazdek.</span></div></div>`;
+  h+=`<div class="seg" role="tablist"><button role="tab" aria-selected="${V.mode!=='rep'}" data-a="mode" data-m="read">Czytaj i słuchaj</button><button role="tab" aria-selected="${V.mode==='rep'}" data-a="mode" data-m="rep">Powtarzaj na głos</button></div>`;
+  if(V.mode==='rep') return h+drillHTML(L)+`</div>`;
+  h+=`<div class="row"><button class="primary" data-a="playall">▶ Odtwórz wszystkie</button><button class="chip" data-a="tr" aria-pressed="${S.set.tr}">Tłumaczenie</button></div>${speedCtl()}`;
+  for(let k=1;k<=4;k++){const g=L.filter(i=>stars(i)===k); if(!g.length) continue;
+    h+=`<div class="shead3">${starStr(k)}<b>${LABELS[k]}</b><span class="muted small">${g.length}</span></div><div class="slist">${g.map(i=>sentenceItem(i)).join('')}</div>`;}
   return h+`</div>`;}
 const LSPEEDS=[0.8,1,1.25,1.5];
 const speedCtl=()=>`<div class="row"><span class="muted small">Tempo</span>${LSPEEDS.map(r=>`<button class="chip" data-a="speed" data-r="${r}" aria-pressed="${S.set.rate===r}">${r}×</button>`).join('')}</div>`;
 function hl(){document.querySelectorAll('.sitem').forEach(x=>x.classList.toggle('on',x.id==='s'+V.cur)); const on=document.getElementById('s'+V.cur); if(on) on.scrollIntoView({block:'nearest',behavior:'smooth'});}
 
 /* ---------- TEST ---------- */
-function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.filter(i=>stars(i)>0&&stars(i)<=2);
+function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.filter(i=>stars(i)>0&&stars(i)<=3); const n14=ls.filter(i=>stars(i)>=1&&stars(i)<=4).length;
   if(!ls.length) return `<div class="stack"><h1>Powtórki</h1><div class="hero"><b>Najpierw zacznij pierwszą paczkę</b><span class="muted small">Tutaj powtarzasz zdania, które już przerobiłeś w Nauce. Zacznij od pierwszej paczki.</span><button class="primary" data-a="tab" data-t="learn">Przejdź do nauki</button></div></div>`;
-  const dist=[0,0,0,0]; ls.forEach(i=>dist[stars(i)]++);
-  const cols=['var(--sunk)','var(--bad)','var(--warn)','var(--good)'];
+  const dist=[0,0,0,0,0,0]; ls.forEach(i=>dist[stars(i)]++);
+  const cols=['var(--sunk)','var(--bad)','color-mix(in srgb,var(--bad) 50%,var(--warn))','var(--warn)','color-mix(in srgb,var(--warn) 40%,var(--good))','var(--good)'];
   let h=`<div class="stack"><h1>Powtórki</h1><p class="note" style="margin:0">Active recall starszych zdań: widzisz polskie zdanie, mówisz po norwesku, oceniasz. Każde zdanie wraca wtedy, gdy zaczyna się zapominać.</p>
-  <div class="hero"><div class="eyebrow">Do powtórki dziś</div><div class="row" style="align-items:baseline"><b class="big">${due.length}</b><span class="muted">zdań</span></div><span class="muted small">Najpierw te, które znasz najsłabiej. Zdania z 3★ wracają po kilku dniach, potem coraz rzadziej.</span><button class="primary" data-a="startdue" ${due.length?'':'disabled'}>Zacznij powtórki</button></div>
-  <div class="grid2"><button class="tile" data-a="startweak" ${weak.length?'':'disabled'}><span class="eyebrow">Słabe 1–2★</span><b>${weak.length}</b><span class="muted small">Dociśnij najsłabsze</span></button><button class="tile" data-a="startmix"><span class="eyebrow">Losowy mix</span><b>20</b><span class="muted small">ze wszystkich w nauce</span></button></div>
+  <div class="hero"><div class="eyebrow">Do powtórki dziś</div><div class="row" style="align-items:baseline"><b class="big">${due.length}</b><span class="muted">zdań</span></div><span class="muted small">Najpierw te, które znasz najsłabiej. Zdania z 5★ wracają po tygodniu, potem coraz rzadziej.</span><button class="primary" data-a="startdue" ${due.length?'':'disabled'}>Zacznij powtórki</button></div>
+  <div class="grid2"><button class="tile" data-a="startweak" ${weak.length?'':'disabled'}><span class="eyebrow">Słabe 1–3★</span><b>${weak.length}</b><span class="muted small">active recall najsłabszych</span></button><button class="tile" data-a="showweak" ${n14?'':'disabled'}><span class="eyebrow">Wyświetl 1–4★</span><b>${n14}</b><span class="muted small">słuchaj i powtarzaj nieopanowane</span></button></div>
   <div class="card stack" style="gap:8px"><div class="between"><h3>Twoje zdania</h3><span class="muted small">${ls.length} w nauce</span></div><div class="dist">${dist.map((c,k)=>c?`<i style="width:${c/ls.length*100}%;background:${cols[k]}" title="${k}★: ${c}"></i>`:'').join('')}</div>
   <div class="row small muted" style="gap:12px">${dist.map((c,k)=>`<span>${k?k+'★':'bez oceny'}: <b>${c}</b></span>`).join('')}</div></div>
   <h2>Powtórz paczkę</h2><div class="stack" style="gap:8px">`;
   Object.keys(S.u).map(Number).sort((a,b)=>b-a).forEach(u=>{const ui=unitInfo(u); const d=dueList().filter(i=>i>=ui.a&&i<ui.b).length;
-    h+=`<button class="ucard" data-a="testunit" data-u="${u}"><div><b>Zdania ${ui.a+1}–${ui.b}</b><div class="row" style="gap:10px;margin-top:2px">${starStr(ui.rated?Math.round(ui.pct*3):0)}<span class="pct muted">${pct(ui.pct)}</span></div></div><span class="chipst ${d?'learn':'done'}">${d?d+' do powtórki':'aktualna'}</span></button>`;});
+    h+=`<button class="ucard" data-a="testunit" data-u="${u}"><div><b>Zdania ${ui.a+1}–${ui.b}</b><div class="row" style="gap:10px;margin-top:2px">${starStr(ui.rated?Math.round(ui.pct*5):0)}<span class="pct muted">${pct(ui.pct)}</span></div></div><span class="chipst ${d?'learn':'done'}">${d?d+' do powtórki':'aktualna'}</span></button>`;});
   return h+`</div></div>`;}
 function startTest(list,title,back,extra){ if(!list.length){toast('Brak zdań do powtórki');return;} stopFg(); T=Object.assign({q:list.slice(),k:0,show:false,title,back,got:[],requeued:{},rc0:dayRec().rc||0},extra||{}); render(); window.scrollTo(0,0); prefetch(T.q[0]); prefetch(T.q[1]);}
 function testView(){const R=T;
-  if(R.k>=R.q.length){const n=R.got.length; const avg=n?(R.got.reduce((a,b)=>a+b,0)/n):0; const d=[0,0,0,0]; R.got.forEach(r=>d[r]++);
+  if(R.k>=R.q.length){const n=R.got.length; const avg=n?(R.got.reduce((a,b)=>a+b,0)/n):0; const d=[0,0,0,0,0,0]; R.got.forEach(r=>d[r]++);
     return `<div class="stack"><div class="eyebrow">${esc(R.title)} · koniec</div><h1>Średnio ${avg.toFixed(1)} ★</h1>
-    <div class="card stack" style="gap:6px">${[3,2,1].map(k=>`<div class="between small"><span>${starStr(k)} ${SHORT[k]}</span><b>${d[k]}</b></div>`).join('')}</div>
-    <p class="muted" style="margin:0">+${(dayRec().rc||0)-R.rc0} active recall. Zdania z 1★ wrócą jeszcze dziś, z 2★ za 1–4 dni, z 3★ za kilka dni lub później.</p>
+    <div class="card stack" style="gap:6px">${[5,4,3,2,1].map(k=>`<div class="between small"><span>${starStr(k)} ${SHORT[k]}</span><b>${d[k]}</b></div>`).join('')}</div>
+    <p class="muted" style="margin:0">+${(dayRec().rc||0)-R.rc0} active recall. Zdania z 1★ wrócą jeszcze dziś, z 2–3★ za 1–2 dni, z 4★ za kilka dni, z 5★ za tydzień lub później.</p>
     ${R.inline?`<div class="grid2"><button class="primary" data-a="testagain">Słabe jeszcze raz</button><button data-a="testend">Gotowe</button></div><div class="grid2"><button data-a="tab" data-t="listen">Posłuchaj w tle</button>${nextUnit()>=0?`<button data-a="openunit" data-u="${nextUnit()}">Następna paczka ›</button>`:'<span></span>'}</div>`:`<div class="grid2"><button class="primary" data-a="testagain">Słabe jeszcze raz</button><button data-a="testend">Gotowe</button></div>`}</div>`;}
   const i=R.q[R.k];
   return `<div class="stack"><div class="between"><button class="ghost back" data-a="testend">${R.inline?'‹ Przerwij':'‹ Zakończ'}</button><span class="pct muted">${R.k+1} / ${R.q.length}</span></div>
   <div class="prog"><i style="width:${R.k/R.q.length*100}%"></i></div>
   <div class="drill"><div class="eyebrow">Zdanie ${i+1} · powiedz je na głos po norwesku</div><div class="big">${esc(D[i][3])}</div>
   ${R.show?`<div style="border-top:1px solid var(--line);padding-top:12px" class="stack" ><div class="ans">${esc(D[i][1])}</div><div class="row"><button class="mini" data-a="say">▶ Lektor</button><button class="mini" data-a="twords" aria-expanded="${!!R.words}">${R.words?'Zwiń rozbiór':'Rozbiór słów'}</button><span class="small muted" style="font-family:var(--fm)">${esc(D[i][0])} — ${esc(D[i][2])}</span></div>${R.words?`<div style="margin-left:-52px">${wordsTable(i)}</div>`:mnList(i)}</div>`:''}</div>
-  ${R.show?`<div class="eyebrow">Jak dobrze znasz to zdanie?</div><div class="rate">${[1,2,3].map(k=>`<button data-a="rate" data-r="${k}" aria-label="${LABELS[k]}: ${LDESC[k]}"><span class="s">${STAR.repeat(k)}</span><span class="k">${LABELS[k]}</span><span class="d">${LDESC[k]}</span></button>`).join('')}</div>`
+  ${R.show?`<div class="between"><div class="eyebrow">Jak dobrze znasz to zdanie?</div>${stars(i)?`<span class="prevr">poprzednio ${starStr(stars(i))}</span>`:''}</div><div class="rate">${[1,2,3,4,5].map(k=>`<button class="${stars(i)===k?'was':''}" data-a="rate" data-r="${k}" aria-label="${k}: ${LABELS[k]}${stars(i)===k?' (poprzednia ocena)':''}"><span class="n">${k}<i>★</i></span><span class="k">${LABELS[k]}</span></button>`).join('')}</div>`
   :`<button class="primary" data-a="reveal" style="min-height:56px">Sprawdź</button>`}</div>`;}
 
 /* ---------- SŁUCHANIE (mix in background) ---------- */
 const bg=$('#bg'); let MIX=null; let lastCT=0; let building=false;
-const WEIGHT=[6,6,3,0.7];
+const WEIGHT=[6,6,5,3.5,2,0.5];
 function poolFor(mode){let ls=learningSet(); if(mode==='recent'){const us=Object.keys(S.u).map(Number).sort((a,b)=>(S.u[b]-S.u[a])||(b-a)).slice(0,3); ls=ls.filter(i=>us.includes(unitOf(i)));} return ls.filter(i=>AFILE[i]);}
-function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0]; pool.forEach(i=>counts[stars(i)]++);
-  const tw=pool.reduce((a,i)=>a+WEIGHT[stars(i)],0)||1; const sh=[0,1,2,3].map(k=>counts[k]*WEIGHT[k]/tw); const mx=Math.max(...sh)||1; const share=k=>sh[k]/mx;
+function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0,0,0]; pool.forEach(i=>counts[stars(i)]++);
+  const tw=pool.reduce((a,i)=>a+WEIGHT[stars(i)],0)||1; const sh=[0,1,2,3,4,5].map(k=>counts[k]*WEIGHT[k]/tw); const mx=Math.max(...sh)||1; const share=k=>sh[k]/mx;
   const playing=MIX&&!bg.paused; const cur=MIX?curItem():null;
   let h=`<div class="stack"><h1>Słuchanie</h1>`;
   if(!pool.length) return h+`<div class="hero"><b>Nie masz jeszcze zdań w nauce</b><span class="muted small">Dodaj paczkę w zakładce Nauka, a tutaj będziesz jej słuchał w tle.</span><button class="primary" data-a="tab" data-t="learn">Przejdź do nauki</button></div></div>`;
@@ -478,9 +494,9 @@ function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0]; p
   <div class="row"><button class="chip" data-a="lpool" data-v="all" aria-pressed="${S.set.lpool==='all'}">Wszystkie w nauce</button><button class="chip" data-a="lpool" data-v="recent" aria-pressed="${S.set.lpool==='recent'}">Ostatnie 3 paczki</button></div>
   <div class="row"><span class="muted small">Długość</span>${[10,20,40].map(m=>`<button class="chip" data-a="lmin" data-v="${m}" aria-pressed="${S.set.lmin===m}">${m} min</button>`).join('')}</div>
   <div class="row"><span class="muted small">Każde zdanie</span>${[1,2].map(m=>`<button class="chip" data-a="lrep" data-v="${m}" aria-pressed="${S.set.lrep===m}">${m}×</button>`).join('')}</div>
-  <div><div class="eyebrow" style="margin-bottom:6px">Jak często usłyszysz zdania (wg gwiazdek)</div><div class="weights">${[0,1,2,3].map(k=>`<div><i style="height:${Math.max(3,share(k)*100)}%"></i><span>${k?k+'★':'nowe'}</span><span>${counts[k]}</span></div>`).join('')}</div></div>
+  <div><div class="eyebrow" style="margin-bottom:6px">Jak często usłyszysz zdania (wg gwiazdek)</div><div class="weights">${[0,1,2,3,4,5].map(k=>`<div><i style="height:${Math.max(3,share(k)*100)}%"></i><span>${k?k+'★':'nowe'}</span><span>${counts[k]}</span></div>`).join('')}</div></div>
   <button class="primary" data-a="buildmix" ${building?'disabled':''} id="buildbtn">${building?'Przygotowuję…':'▶ Przygotuj i słuchaj'}</button></div>
-  <p class="note">Nowe i z 1★ słyszysz najczęściej, z 2★ rzadziej, a z 3★ od czasu do czasu, żeby nie wyleciały z głowy. Mieszanka jest jednym nagraniem, więc gra także w tle i przy zablokowanym ekranie.</p></div>`;
+  <p class="note">Nowe i z 1–2★ słyszysz najczęściej, im więcej gwiazdek, tym rzadziej, a z 5★ od czasu do czasu, żeby nie wyleciały z głowy. Mieszanka jest jednym nagraniem, więc gra także w tle i przy zablokowanym ekranie.</p></div>`;
   return h;}
 // pause after each sentence, in recording seconds. Repeat mode: time to say it yourself at your own pace (≈ the sentence at 1× plus a breath), whatever the tempo.
 const gapFor=d=>S.set.lmode==='repeat'?(d*0.85+0.35)*S.set.lspeed:0.45;
@@ -530,7 +546,7 @@ const IC={
  g:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" opacity=".45"/></svg>',
  h:'<svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/></svg>',
  a:'<svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 4v-4H6a2 2 0 0 1-2-2z" fill="currentColor"/></svg>'};
-const count3=()=>Object.values(S.s).filter(x=>x&&x.r>=3).length;
+const count5=()=>Object.values(S.s).filter(x=>x&&x.r>=5).length;
 const totalListen=()=>Object.values(S.day).reduce((a,r)=>a+(r.ls||0),0);
 const totalReps=()=>Object.values(S.day).reduce((a,r)=>a+(r.rp||0),0);
 const bestStreak=()=>Math.max(S.best||0,streak().cur);
@@ -538,11 +554,11 @@ const groupsDone=()=>Array.from({length:NG},(_,g)=>groupInfo(g).pct>=.9).filter(
 const totalRecall=()=>Object.values(S.day).reduce((a,r)=>a+(r.rc||0),0);
 const daysAt=k=>Object.values(S.day).filter(r=>(r.tier||(r.ok?1:0))>=k).length;
 // [id, kategoria, nazwa, wartość, próg]
-const BCAT=[['s','Seria'],['h','Poziomy dni'],['a','Active recall'],['c','Nauka'],['f','Opanowane (3★)'],['l','Słuchanie'],['r','Powtórzenia'],['g','Setki']];
+const BCAT=[['s','Seria'],['h','Poziomy dni'],['a','Active recall'],['c','Nauka'],['f','Opanowane (5★)'],['l','Słuchanie'],['r','Powtórzenia'],['g','Setki']];
 const BADGES=[
  ['s3','s','3 dni z rzędu',bestStreak,3],['s7','s','Tydzień z rzędu',bestStreak,7],['s14','s','2 tygodnie',bestStreak,14],['s30','s','Miesiąc z rzędu',bestStreak,30],['s60','s','60 dni',bestStreak,60],['s100','s','100 dni',bestStreak,100],
  ['u1','c','Pierwsza paczka',()=>Object.keys(S.u).length,1],['c100','c','100 zdań w nauce',()=>learningSet().length,100],['c300','c','300 zdań w nauce',()=>learningSet().length,300],['c600','c','Połowa listy',()=>learningSet().length,600],['c1201','c','Cała lista w nauce',()=>learningSet().length,N],
- ['f50','f','50 opanowanych',count3,50],['f200','f','200 opanowanych',count3,200],['f500','f','500 opanowanych',count3,500],['f1201','f','Wszystko opanowane',count3,N],
+ ['f50','f','50 opanowanych',count5,50],['f200','f','200 opanowanych',count5,200],['f500','f','500 opanowanych',count5,500],['f1201','f','Wszystko opanowane',count5,N],
  ['l60','l','Godzina słuchania',()=>totalListen()/60,60],['l600','l','10 godzin',()=>totalListen()/60,600],['l1500','l','25 godzin',()=>totalListen()/60,1500],['l3000','l','50 godzin',()=>totalListen()/60,3000],['l6000','l','100 godzin',()=>totalListen()/60,6000],
  ['r1k','r','1 000 powtórzeń',totalReps,1000],['r5k','r','5 000 powtórzeń',totalReps,5000],['r10k','r','10 000 powtórzeń',totalReps,10000],['r25k','r','25 000 powtórzeń',totalReps,25000],
  ['g1','g','Pierwsza setka',groupsDone,1],['g6','g','Pół listy opanowane',groupsDone,6],['g12','g','Wszystkie setki',groupsDone,12],
@@ -577,7 +593,7 @@ function statsView(){const st=streak(); const r=dayRec(); const t=today();
   <span class="muted small">Pasek kończy się na progu Hard, kreski to Easy i Medium. Dzień zalicza się, gdy wszystkie trzy dojdą do Easy. Powtórzenia to odsłuchane zdania (krok 1 i 2 oraz lektor). Active recall to zdania odtworzone z pamięci i ocenione (krok 3 i Powtórki).</span></div>
   <div class="stack" style="gap:8px"><h3>Rekordy dnia</h3><div class="grid3" style="align-items:start">${recCard('ls','Słuchanie',fmtMin)}${recCard('rp','Powtórzenia',v=>nf(v))}${recCard('rc','Active recall',v=>nf(v))}</div></div>
   <div class="card stack"><h3>Ostatnie 12 tygodni</h3><div class="heat">${cells}</div><div class="row small muted" style="gap:6px"><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 18%,var(--sunk));display:inline-block"></i><span>aktywność</span><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 45%,var(--sunk));display:inline-block"></i><span>Easy</span><i style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 72%,var(--sunk));display:inline-block"></i><span>Medium</span><i style="width:12px;height:12px;border-radius:3px;background:var(--accent);display:inline-block"></i><span>Hard</span></div></div>
-  <div class="grid2"><div class="tile"><span class="eyebrow">W nauce</span><b>${learningSet().length}</b><span class="muted small">z ${N} zdań</span></div><div class="tile"><span class="eyebrow">Opanowane 3★</span><b>${count3()}</b><span class="muted small">średnia ${avg.toFixed(1)}★</span></div>
+  <div class="grid2"><div class="tile"><span class="eyebrow">W nauce</span><b>${learningSet().length}</b><span class="muted small">z ${N} zdań</span></div><div class="tile"><span class="eyebrow">Opanowane 5★</span><b>${count5()}</b><span class="muted small">średnia ${avg.toFixed(1)}★</span></div>
   <div class="tile"><span class="eyebrow">Słuchanie</span><b>${totalListen()>=36000?(totalListen()/3600).toFixed(0)+' h':nf(totalListen()/60)+' min'}</b><span class="muted small">łącznie</span></div><div class="tile"><span class="eyebrow">Powtórzenia</span><b>${nf(totalReps())}</b><span class="muted small">łącznie</span></div>
   <div class="tile"><span class="eyebrow">Active recall</span><b>${nf(totalRecall())}</b><span class="muted small">łącznie</span></div><div class="tile"><span class="eyebrow">Zaliczone dni</span><b>${daysAt(1)}</b><span class="muted small">Medium ${daysAt(2)} · Hard ${daysAt(3)}</span></div></div>
   <div class="card stack"><h3>Progi dnia</h3>
@@ -606,24 +622,25 @@ const A={
   reps:d=>{S.set.reps=+d.n; save(); stopFg(); render();},
   words:d=>{const i=+d.i; V.open[i]=!V.open[i]; const el=document.getElementById('s'+i); if(el){el.outerHTML=sentenceItem(i);} },
   play:async d=>{stopFg(); if(V.view==='unit') ensureStarted(V.u); const id=runId,i=+d.i; V.cur=i; hl(); await playOne(i,id); if(alive(id)){V.cur=-1; hl();}},
-  playall:async()=>{stopFg(); ensureStarted(V.u); const id=runId; const ui=unitInfo(V.u); wakeLock(); for(let i=(V.cur>=ui.a&&V.cur<ui.b?V.cur:ui.a);i<ui.b&&alive(id);i++){V.cur=i; hl(); await playOne(i,id); await sleep(600/S.set.rate,id);} if(alive(id)){V.cur=-1; hl(); releaseWake();}},
-  prev:()=>{stopFg(); const ui=unitInfo(V.u); V.cur=Math.max(ui.a,(V.cur>=ui.a?V.cur:ui.a)-1); render();},
-  next:()=>{stopFg(); const ui=unitInfo(V.u); V.cur=Math.min(ui.b-1,(V.cur>=ui.a?V.cur:ui.a)+1); render();},
-  rep:async()=>{ if(document.getElementById('repbtn').dataset.on){stopFg(); render(); return;} stopFg(); ensureStarted(V.u); const id=runId; const ui=unitInfo(V.u); wakeLock(); let i=V.cur>=ui.a&&V.cur<ui.b?V.cur:ui.a;
-    for(;i<ui.b&&alive(id);i++){V.cur=i; render(); const b=document.getElementById('repbtn'); if(b){b.textContent='■ Stop'; b.dataset.on='1';}
-      for(let k=0;k<S.set.reps&&alive(id);k++){document.querySelectorAll('#reps i').forEach((x,j)=>x.classList.toggle('on',j<=k)); const dur=await playOne(i,id); if(!alive(id)) break; await sleep(Math.max(900,(dur||2)*1000+700),id);} }
-    if(alive(id)){releaseWake(); V.cur=ui.b-1; render(); toast('Koniec. Teraz krok 3: active recall');}},
+  playall:async()=>{stopFg(); if(V.view==='unit') ensureStarted(V.u); const id=runId; const L=curList(); wakeLock(); for(let k=Math.max(0,L.indexOf(V.cur));k<L.length&&alive(id);k++){const i=L[k]; V.cur=i; hl(); await playOne(i,id); await sleep(600/S.set.rate,id);} if(alive(id)){V.cur=-1; hl(); releaseWake();}},
+  prev:()=>{stopFg(); const L=curList(); V.cur=L[Math.max(0,L.indexOf(V.cur)-1)]; render();},
+  next:()=>{stopFg(); const L=curList(); const k=L.indexOf(V.cur); V.cur=L[Math.min(L.length-1,k<0?1:k+1)]; render();},
+  rep:async()=>{ if(document.getElementById('repbtn').dataset.on){stopFg(); render(); return;} stopFg(); if(V.view==='unit') ensureStarted(V.u); const id=runId; const L=curList(); wakeLock(); let k=Math.max(0,L.indexOf(V.cur));
+    for(;k<L.length&&alive(id);k++){const i=L[k]; V.cur=i; render(); const b=document.getElementById('repbtn'); if(b){b.textContent='■ Stop'; b.dataset.on='1';}
+      for(let r=0;r<S.set.reps&&alive(id);r++){document.querySelectorAll('#reps i').forEach((x,j)=>x.classList.toggle('on',j<=r)); const dur=await playOne(i,id); if(!alive(id)) break; await sleep(Math.max(900,(dur||2)*1000+700),id);} }
+    if(alive(id)){releaseWake(); V.cur=L[L.length-1]; render(); toast(V.view==='unit'?'Koniec. Teraz krok 3: active recall':'Koniec listy');}},
   startrec:()=>{const u=V.u; ensureStarted(u); const ui=unitInfo(u); const l=[]; for(let i=ui.a;i<ui.b;i++) l.push(i); V.mode='rec'; startTest(shuffle(l),`Active recall · zdania ${ui.a+1}–${ui.b}`,null,{inline:true,u});},
   startunit:d=>{const u=+d.u; if(!S.u[u]){S.u[u]=today(); const ui=unitInfo(u); addNew(ui.n);} toast('Paczka dodana do nauki'); render();},
   testunit:d=>{const u=+d.u; if(!S.u[u]){S.u[u]=today(); const ui=unitInfo(u); addNew(ui.n);} const ui=unitInfo(u); const l=[]; for(let i=ui.a;i<ui.b;i++) l.push(i); startTest(shuffle(l),`Zdania ${ui.a+1}–${ui.b}`,{tab:V.tab,view:V.view});},
   startdue:()=>startTest(dueList().slice(0,40),'Powtórka na dziś',{tab:'test',view:'home'}),
-  startweak:()=>startTest(shuffle(learningSet().filter(i=>stars(i)>0&&stars(i)<=2)).slice(0,30),'Słabe zdania',{tab:'test',view:'home'}),
+  startweak:()=>startTest(shuffle(learningSet().filter(i=>stars(i)>0&&stars(i)<=3)).slice(0,30),'Słabe zdania',{tab:'test',view:'home'}),
+  showweak:()=>{const L=learningSet().filter(i=>stars(i)>=1&&stars(i)<=4).sort((a,b)=>stars(a)-stars(b)||a-b); go({tab:'test',view:'weak',list:L,mode:'read',cur:-1}); L.slice(0,12).forEach(prefetch);},
   startmix:()=>startTest(shuffle(learningSet()).slice(0,20),'Losowy mix',{tab:'test',view:'home'}),
   reveal:()=>{T.show=true; T.words=false; render(); stopFg(); const id=runId; playOne(T.q[T.k],id);},
   say:()=>{stopFg(); const id=runId; playOne(T.q[T.k],id);},
   twords:()=>{T.words=!T.words; render();},
   rate:d=>{const r=+d.r, i=T.q[T.k]; rate(i,r); T.got.push(r); if(r===1&&!T.requeued[i]){T.requeued[i]=1; T.q.push(i);} T.k++; T.show=false; T.words=false; stopFg(); render(); window.scrollTo(0,0); prefetch(T.q[T.k]); prefetch(T.q[T.k+1]);},
-  testagain:()=>{const w=[...new Set(T.q.filter(i=>stars(i)<=2))]; if(!w.length){toast('Nie masz słabych zdań w tej rundzie'); return;} const b=T.back; startTest(shuffle(w),'Słabe jeszcze raz',b,T.inline?{inline:true,u:T.u}:null);},
+  testagain:()=>{const w=[...new Set(T.q.filter(i=>stars(i)<=3))]; if(!w.length){toast('Nie masz słabych zdań w tej rundzie'); return;} const b=T.back; startTest(shuffle(w),'Słabe jeszcze raz',b,T.inline?{inline:true,u:T.u}:null);},
   testend:()=>{const inl=T&&T.inline; const b=T&&T.back; T=null; stopFg(); if(inl){render(); window.scrollTo(0,0); return;} if(b){V.tab=b.tab; V.view=b.view;} go({});},
   lpool:d=>{S.set.lpool=d.v; save(); render();}, lmin:d=>{S.set.lmin=+d.v; save(); render();}, lrep:d=>{S.set.lrep=+d.v; save(); render();},
   buildmix:()=>buildMix(),
