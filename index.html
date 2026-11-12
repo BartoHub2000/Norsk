@@ -139,6 +139,14 @@ nav.tabs .badge{position:absolute;margin-left:22px;margin-top:-2px;background:va
 .bdg{border:1px solid var(--line);border-radius:12px;padding:10px;font-size:.82rem;display:flex;gap:8px;align-items:center;background:var(--surface)}
 .bdg .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sunk);font-weight:800;font-size:.8rem;flex:none}
 .bdg.got .ic{background:var(--accent);color:var(--accent-fg)} .bdg:not(.got){opacity:.6}
+.mnb{border:0;background:none;padding:0 2px;min-height:0;font-size:.75rem;color:var(--muted);text-decoration:underline dotted;cursor:pointer}
+.mn,.mnh{display:block;margin-top:3px;padding:3px 8px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent);border-radius:0 6px 6px 0;font-size:.82rem;color:var(--fg)}
+.mnh{margin:0 12px 10px 52px}
+.mnlist{display:flex;flex-direction:column;gap:4px;font-size:.88rem;border-left:3px solid var(--accent);padding:4px 10px;background:color-mix(in srgb,var(--accent) 9%,transparent);border-radius:0 8px 8px 0}
+.mnlist b{font-family:var(--fm);font-size:.8rem;color:var(--fjord);margin-right:4px}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
+.modal .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:18px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.modal textarea{font-family:inherit;font-size:1rem;min-height:110px}
 textarea{width:100%;font:inherit;font-size:.8rem;font-family:var(--fm);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;min-height:90px}
 .back{padding-left:0;margin-left:-4px;align-self:flex-start}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:.9rem;z-index:40;max-width:90vw;text-align:center}
@@ -191,11 +199,25 @@ const today=()=>dnum();
 
 /* ---------- state ---------- */
 const KEY='norsk1200.v2';
-const DEF={v:2,s:{},u:{},day:{},goal:50,newGoal:10,best:0,set:{rate:1,reps:5,tr:true,lmin:20,lrep:1,lpool:'all',lspeed:1},bdg:{}};
+const APPVER='3';
+const DEF={v:2,s:{},u:{},day:{},goal:50,newGoal:10,best:0,set:{rate:1,reps:5,tr:true,lmin:20,lrep:1,lpool:'all',lspeed:1,lmode:'listen'},bdg:{},m:{}};
+// skojarzenia z naszych rozmów, do edycji w aplikacji (klucz = forma podstawowa)
+const SEED_M={'trenge':'trening: żeby coś umieć, potrzebujesz treningu','framme':'brama: jesteś na miejscu, kiedy stoisz pod bramą','glemme':'gleba + mmm: zakopałem coś w glebie i… mmm, zapomniałem gdzie',
+ 'ødelegge':'delegacja: przyjechała delegacja i wszystko zepsuła','lure på':'lura: zastanawiam się, czemu ta kawa to taka lura','bry seg':'brwi: unosisz brwi, bo ci zależy','lag':'lag w grze: cała drużyna gra z lagiem',
+ 'likevel':'licho wie: licho wie, co będzie, a i tak to zrobię','sti':'ścieżka: sti… ścieżka','savne':'sauna: tęsknię za sauną','velge':'Belgia / welon: wybierasz welon albo wycieczkę do Belgii','vanskelig':'wanna + skały: wanna pełna skał, trudna sprawa',
+ 'mellom':'melon: melon wciśnięty pomiędzy dwa inne','flytte':'flet: przy przeprowadzce pakujesz flet do pudła','venne seg':'Wenecja: w Wenecji szybko przyzwyczajasz się do łodzi','prate':'prać: gadamy przy praniu','flere':'flary: odpalasz kilka flar, coraz więcej',
+ 'lete':'lecieć: lecisz po całym domu, szukając kluczy (lete etter)','smerte':'śmierć / niem. Schmerz: ból jak śmierć','forsvinne':'forsa + świnie: forsa znika, bo świnie ją zjadły','bekymre seg':'beczy, że umrze: tak się martwi, że beczy',
+ 'stole':'stol = krzesło: ufasz krzesłu, że cię utrzyma (stole på)','svare':'swary: odpowiadasz i zaczynają się swary','løpe':'lipa / niem. laufen: biegniesz, bo lipa','trikk':'trick: jazda tramwajem bez biletu to niezły trick','ane':'Ania: Ania nie ma pojęcia (aner ikke)',
+ 'lyve':'lewe: kłamie, bo ma lewe papiery','kjempe':'szympans: walczy jak szympans','beskytte':'skyte (strzelać): chronisz kogoś, bo ktoś strzela','fjell':'fiołek: na górze rosną fiołki','ferge':'ferie: na ferie płyniesz promem',
+ 'bryte':'Brytania: Brytania zerwała z Unią','skape':'ang. shape / skapywać: tworzysz kształt, a farba skapuje','dårlig':'doły: kiepsko ci, jesteś w dołku','bestemme':'best: decydujesz, co jest najlepsze','passe på':'pasy: zapnij pasy, uważaj',
+ 'tjene':'cena: zarabiasz, żeby płacić ceny','gjelde':'jeleń: zasady dotyczą nawet jelenia','late som':'lata: od lat udaje','grunn':'grunt: z powodu (på grunn av) gruntu, podstawy','bare':'bare minimum: tylko tyle, ile trzeba',
+ 'ned':'Niderlandy: leżą nisko, w dole','huske':'huśtawka: pamiętasz huśtawkę z dzieciństwa','spise':'spiżarnia: jesz to, co ze spiżarni','gråte':'krata: płacze za kratami','selge':'Selgros: Selgros sprzedaje hurtowo','hete':'heca: heca, jak on się nazywa!','kjøpe':'szopa: kupujesz szopę'};
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){S=null;}
 if(!S||S.v!==2) S=JSON.parse(JSON.stringify(DEF));
-S.set=Object.assign({},DEF.set,S.set||{}); S.bdg=S.bdg||{};
+function normState(){S.set=Object.assign({},DEF.set,S.set||{}); S.bdg=S.bdg||{}; S.m=S.m||{}; S.s=S.s||{}; S.u=S.u||{}; S.day=S.day||{};
+  if(!S.mSeed){for(const k in SEED_M) if(!S.m[k]) S.m[k]=SEED_M[k]; S.mSeed=1;}}
+normState();
 let saveT=null;
 function save(){clearTimeout(saveT); saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Nie udało się zapisać postępu');}},250);}
 window.addEventListener('pagehide',()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}});
@@ -223,17 +245,58 @@ function rate(i,r){const t=today(); const s=S.s[i]||{r:0,d:t,n:0,iv:0}; let iv;
   if(r===1) iv=0; else if(r===2) iv=1; else if(r===3) iv=2; else if(r===4) iv=Math.max(4,Math.round((s.iv||1)*1.8)); else iv=Math.max(7,Math.round((s.iv||2)*2.5));
   iv=Math.min(iv,90); S.s[i]={r,d:t+iv,n:(s.n||0)+1,iv}; addXP(1,'t');}
 
-/* ---------- foreground audio ---------- */
-const fg=$('#fg'); try{fg.preservesPitch=true;fg.webkitPreservesPitch=true;}catch(e){}
+/* ---------- audio helpers ---------- */
+const setPitch=el=>{try{el.preservesPitch=true;el.webkitPreservesPitch=true;el.mozPreservesPitch=true;}catch(e){}};
+const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),ms))]);
+function wavBlob(data,sr){const hdr=new ArrayBuffer(44), dv=new DataView(hdr); const ws=(o,s)=>{for(let k=0;k<s.length;k++) dv.setUint8(o+k,s.charCodeAt(k));};
+  ws(0,'RIFF'); dv.setUint32(4,36+data.byteLength,true); ws(8,'WAVE'); ws(12,'fmt '); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true); dv.setUint32(24,sr,true); dv.setUint32(28,sr*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true); ws(36,'data'); dv.setUint32(40,data.byteLength,true);
+  return new Blob([hdr,data.buffer],{type:'audio/wav'});}
+function makeCtx(sr){const C=window.OfflineAudioContext||window.webkitOfflineAudioContext; return new C(1,sr,sr);}
+async function decodeFile(f,sr){const buf=await (await fetch(f)).arrayBuffer(); let ctx; try{ctx=makeCtx(sr);}catch(e){ctx=makeCtx(22050);}
+  return await new Promise((res,rej)=>{let ok=false; const r=x=>{if(!ok){ok=true;res(x);}}, j=e=>{if(!ok){ok=true;rej(e);}};
+    try{const p=ctx.decodeAudioData(buf,r,j); if(p&&p.then) p.then(r,j);}catch(e){j(e);} setTimeout(()=>j(new Error('timeout')),30000);});}
+
+/* ---------- foreground audio (each sentence = its own short clip with silence in front) ---------- */
+const fg=$('#fg'); setPitch(fg);
 let runId=0, wake=null;
 function stopFg(){runId++; try{fg.pause();}catch(e){} releaseWake();}
 const alive=id=>id===runId;
 const sleep=(ms,id)=>new Promise(r=>{const t0=Date.now();(function f(){if(!alive(id)||Date.now()-t0>=ms) r(); else setTimeout(f,40);})();});
+const SILENT=URL.createObjectURL(wavBlob(new Int16Array(1600),16000));
+let fgUnlocked=false;
+function unlockFg(){if(fgUnlocked) return; try{fg.src=SILENT; const p=fg.play(); if(p&&p.then) p.then(()=>{fgUnlocked=true;},()=>{});}catch(e){}}
+const FSR=24000, PCM=new Map(), CLIPS=new Map();
+function getPCM(f){if(PCM.has(f)){const v=PCM.get(f); PCM.delete(f); PCM.set(f,v); return v;}
+  const p=decodeFile(f,FSR).then(ab=>({ch:ab.getChannelData(0),sr:ab.sampleRate})); p.catch(()=>{if(PCM.get(f)===p) PCM.delete(f);});
+  PCM.set(f,p); while(PCM.size>3) PCM.delete(PCM.keys().next().value); return p;}
+async function clip(i){if(CLIPS.has(i)){const v=CLIPS.get(i); CLIPS.delete(i); CLIPS.set(i,v); return v;}
+  const a=AFILE[i]; const {ch,sr}=await getPCM(a.f); if(CLIPS.has(i)) return CLIPS.get(i);
+  const s=Math.max(0,Math.floor(a.s*sr)), e=Math.min(ch.length,Math.ceil(a.e*sr)), n=e-s;
+  const pre=Math.floor(sr*0.35), post=Math.floor(sr*0.15), fade=Math.floor(sr*0.012); const out=new Int16Array(pre+n+post);
+  for(let k=0;k<n;k++){let v=ch[s+k]; if(k<fade) v*=k/fade; else if(k>n-fade) v*=(n-k)/fade; v=Math.max(-1,Math.min(1,v)); out[pre+k]=v<0?v*32768:v*32767;}
+  const v={url:URL.createObjectURL(wavBlob(out,sr)),dur:out.length/sr}; CLIPS.set(i,v);
+  while(CLIPS.size>60){const k=CLIPS.keys().next().value; URL.revokeObjectURL(CLIPS.get(k).url); CLIPS.delete(k);} return v;}
+function prefetch(i){if(AFILE[i]) clip(i).catch(()=>{});}
+async function playOne(i,id){const a=AFILE[i]; if(!a) return 0; pauseBg();
+  let c=null; try{c=await withTimeout(clip(i),15000);}catch(e){c=null;}
+  if(!alive(id)) return 0;
+  if(!c) return playSeek(i,id);
+  return await new Promise(res=>{let done=false, iv=0, to=0; const rate=S.set.rate;
+    const fin=v=>{if(done) return; done=true; clearInterval(iv); clearTimeout(to); fg.removeEventListener('ended',onEnd); res(v);};
+    const onEnd=()=>fin(c.dur/rate); fg.addEventListener('ended',onEnd);
+    try{fg.pause();}catch(e){} fg.src=c.url; fg.defaultPlaybackRate=rate; fg.playbackRate=rate; setPitch(fg);
+    try{const p=fg.play(); if(p&&p.catch) p.catch(()=>fin(0));}catch(e){fin(0);}
+    // a newer tap only ends this wait; it never touches the player (stopFg already paused it)
+    iv=setInterval(()=>{if(!alive(id)) fin(0); else if(!fg.paused&&fg.playbackRate!==S.set.rate) fg.playbackRate=S.set.rate;},60);
+    to=setTimeout(()=>{if(alive(id)){try{fg.pause();}catch(e){}} fin(c.dur/rate);},(c.dur/rate+5)*1000);});}
+// fallback when decoding is not possible: seek inside the long file, guarded by timeouts
 function loadSrc(src){return new Promise(res=>{const full=new URL(src,location.href).href; if(fg.src===full&&fg.readyState>=1) return res();
   fg.src=src; const done=()=>{fg.removeEventListener('loadedmetadata',done);res();}; fg.addEventListener('loadedmetadata',done); fg.load(); setTimeout(res,8000);});}
-async function playOne(i,id){const a=AFILE[i]; if(!a) return 0; pauseBg(); await loadSrc(a.f); if(!alive(id)) return 0;
-  fg.playbackRate=S.set.rate; try{fg.currentTime=a.s;}catch(e){} try{await fg.play();}catch(e){return 0;}
-  await new Promise(r=>{(function f(){if(!alive(id)){fg.pause();return r();} if(fg.currentTime>=a.e||fg.ended){fg.pause();return r();} setTimeout(f,25);})();});
+async function playSeek(i,id){const a=AFILE[i]; await loadSrc(a.f); if(!alive(id)) return 0;
+  fg.playbackRate=S.set.rate; try{fg.currentTime=Math.max(0,a.s-0.1);}catch(e){}
+  try{await withTimeout(fg.play(),4000);}catch(e){return 0;}
+  const t0=Date.now(), lim=((a.e-a.s)/S.set.rate+4)*1000;
+  await new Promise(r=>{(function f(){if(!alive(id)) return r(); if(fg.currentTime>=a.e||fg.ended||Date.now()-t0>lim){fg.pause();return r();} setTimeout(f,25);})();});
   return (a.e-a.s)/S.set.rate;}
 async function wakeLock(){try{if(navigator.wakeLock&&!wake) wake=await navigator.wakeLock.request('screen');}catch(e){wake=null;}}
 function releaseWake(){try{wake&&wake.release();}catch(e){} wake=null;}
@@ -282,10 +345,17 @@ function groupView(){const g=V.g,[a,b]=gRange(g),gi=groupInfo(g);
     const avg=ui.rated?Math.round(ui.pct*5):0;
     h+=`<button class="ucard" data-a="openunit" data-u="${u}"><div style="min-width:0"><div class="between"><b>Paczka ${k+1} · ${ui.a+1}–${ui.b}</b></div><div class="muted small" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(D[ui.a][0])}, ${esc(D[ui.a+1][0])}, ${esc(D[ui.a+2][0])}…</div>${started(u)?`<div class="row" style="gap:10px;margin-top:4px">${starStr(avg)}<span class="pct muted">${pct(ui.pct)}</span></div>`:''}</div><span class="chipst ${ui.st}">${lab}</span></button>`;});
   return h+`</div></div>`;}
-function wordsTable(i){const ws=W[i]||[]; return `<div class="words">${ws.map(([f,b,g,n])=>`<span class="w">${esc(f)}</span><span><span class="b">${esc(b)}</span>${g?` · <span class="g">${esc(g)}</span>`:''}${n?` <span class="t">(${esc(n)})</span>`:''}</span>`).join('')}</div>`;}
+const lc=s=>String(s||'').toLowerCase().trim();
+function mnGet(b,f){const k1=lc(b), k2=lc(f); if(S.m[k1]) return [k1,S.m[k1]]; if(k2&&S.m[k2]) return [k2,S.m[k2]]; return [k1,''];}
+function wordsTable(i){const ws=W[i]||[]; return `<div class="words">${ws.map(([f,b,g,n],k)=>{const [,mt]=mnGet(b,f);
+  return `<span class="w">${esc(f)}</span><span><span class="b">${esc(b)}</span>${g?` · <span class="g">${esc(g)}</span>`:''}${n?` <span class="t">(${esc(n)})</span>`:''} <button class="mnb" data-a="mnedit" data-i="${i}" data-k="${k}" aria-label="${mt?'Edytuj skojarzenie':'Dodaj skojarzenie'}">${mt?'✎':'+ skojarzenie'}</button>${mt?`<span class="mn">${esc(mt)}</span>`:''}</span>`;}).join('')}</div>`;}
+// all mnemonics that belong to a sentence: its head word first, then the words in it
+function sentMn(i){const out=[], seen={}; const add=(label,b,f)=>{const [k,t]=mnGet(b,f); if(t&&!seen[k]){seen[k]=1; out.push([label,t]);}};
+  add(D[i][0],D[i][0],''); (W[i]||[]).forEach(([f,b])=>add(b,b,f)); return out;}
+const mnList=i=>{const l=sentMn(i); return l.length?`<div class="mnlist">${l.map(([w,t])=>`<div><b>${esc(w)}</b> ${esc(t)}</div>`).join('')}</div>`:'';};
 function sentenceItem(i,opts={}){const open=!!V.open[i]; const r=stars(i);
   return `<div class="sitem ${V.cur===i?'on':''}" id="s${i}"><button class="shead" data-a="play" data-i="${i}"><span class="n">${i+1}</span><span><div class="no">${esc(D[i][1])}</div>${S.set.tr||opts.forcePl?`<div class="pl">${esc(D[i][3])}</div>`:''}</span></button>
-  <div class="sfoot"><span class="vb">${esc(D[i][0])} — ${esc(D[i][2])}</span>${r?starStr(r):''}<button class="mini" data-a="words" data-i="${i}" aria-expanded="${open}">${open?'Zwiń rozbiór':'Rozbiór słów'}</button></div>${open?wordsTable(i):''}</div>`;}
+  <div class="sfoot"><span class="vb">${esc(D[i][0])} — ${esc(D[i][2])}</span>${r?starStr(r):''}<button class="mini" data-a="words" data-i="${i}" aria-expanded="${open}">${open?'Zwiń rozbiór':'Rozbiór słów'}</button></div>${(()=>{const [,t]=mnGet(D[i][0],''); return t&&!open?`<div class="mnh">${esc(t)}</div>`:'';})()}${open?wordsTable(i):''}</div>`;}
 function unitView(){const u=V.u, ui=unitInfo(u), g=Math.floor(u/10);
   let h=`<div class="stack"><button class="ghost back" data-a="opengroup" data-g="${g}">‹ Zdania ${gRange(g)[0]+1}–${gRange(g)[1]}</button>
   <div class="between"><div><div class="eyebrow">Paczka ${u%10+1} · setka ${g+1}</div><h1>Zdania ${ui.a+1}–${ui.b}</h1></div>${started(u)?`<span class="pct" style="font-size:1.1rem">${pct(ui.pct)}</span>`:''}</div>
@@ -303,7 +373,8 @@ function unitView(){const u=V.u, ui=unitInfo(u), g=Math.floor(u/10);
   if(!started(u)) h+=`<div class="hero"><b>Gotowy na tę paczkę?</b><span class="muted small">Dodanie jej do nauki wrzuci te zdania do testów i do słuchania w tle. +20 punktów.</span><button class="primary" data-a="startunit" data-u="${u}">Dodaj do nauki</button></div>`;
   else{ const nu=nextUnit(); h+=`<div class="grid2"><button class="primary" data-a="testunit" data-u="${u}">Sprawdź tę paczkę</button>${nu>=0?`<button data-a="openunit" data-u="${nu}">Następna paczka ›</button>`:'<span></span>'}</div>`;}
   return h+`</div>`;}
-const speedCtl=()=>`<div class="row"><span class="muted small">Tempo</span>${[0.8,1,1.25].map(r=>`<button class="chip" data-a="speed" data-r="${r}" aria-pressed="${S.set.rate===r}">${r}×</button>`).join('')}</div>`;
+const LSPEEDS=[0.8,1,1.25,1.5];
+const speedCtl=()=>`<div class="row"><span class="muted small">Tempo</span>${LSPEEDS.map(r=>`<button class="chip" data-a="speed" data-r="${r}" aria-pressed="${S.set.rate===r}">${r}×</button>`).join('')}</div>`;
 function hl(){document.querySelectorAll('.sitem').forEach(x=>x.classList.toggle('on',x.id==='s'+V.cur)); const on=document.getElementById('s'+V.cur); if(on) on.scrollIntoView({block:'nearest',behavior:'smooth'});}
 
 /* ---------- TEST ---------- */
@@ -320,7 +391,7 @@ function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.f
   Object.keys(S.u).map(Number).sort((a,b)=>b-a).forEach(u=>{const ui=unitInfo(u); const d=dueList().filter(i=>i>=ui.a&&i<ui.b).length;
     h+=`<button class="ucard" data-a="testunit" data-u="${u}"><div><b>Zdania ${ui.a+1}–${ui.b}</b><div class="row" style="gap:10px;margin-top:2px">${starStr(ui.rated?Math.round(ui.pct*5):0)}<span class="pct muted">${pct(ui.pct)}</span></div></div><span class="chipst ${d?'learn':'done'}">${d?d+' do powtórki':'aktualna'}</span></button>`;});
   return h+`</div></div>`;}
-function startTest(list,title,back){ if(!list.length){toast('Brak zdań do testu');return;} stopFg(); T={q:list.slice(),k:0,show:false,title,back,got:[],requeued:{},xp0:dayRec().xp}; render(); window.scrollTo(0,0);}
+function startTest(list,title,back){ if(!list.length){toast('Brak zdań do testu');return;} stopFg(); T={q:list.slice(),k:0,show:false,title,back,got:[],requeued:{},xp0:dayRec().xp}; render(); window.scrollTo(0,0); prefetch(T.q[0]); prefetch(T.q[1]);}
 function testView(){const R=T;
   if(R.k>=R.q.length){const n=R.got.length; const avg=n?(R.got.reduce((a,b)=>a+b,0)/n):0; const d=[0,0,0,0,0,0]; R.got.forEach(r=>d[r]++);
     return `<div class="stack"><div class="eyebrow">${esc(R.title)} · koniec</div><h1>Średnio ${avg.toFixed(1)} ★</h1>
@@ -331,7 +402,7 @@ function testView(){const R=T;
   return `<div class="stack"><div class="between"><button class="ghost back" data-a="testend">‹ Zakończ</button><span class="pct muted">${R.k+1} / ${R.q.length}</span></div>
   <div class="prog"><i style="width:${R.k/R.q.length*100}%"></i></div>
   <div class="drill"><div class="eyebrow">Zdanie ${i+1} · powiedz je na głos po norwesku</div><div class="big">${esc(D[i][3])}</div>
-  ${R.show?`<div style="border-top:1px solid var(--line);padding-top:12px" class="stack" ><div class="ans">${esc(D[i][1])}</div><div class="row"><button class="mini" data-a="say">▶ Lektor</button><button class="mini" data-a="twords" aria-expanded="${!!R.words}">${R.words?'Zwiń rozbiór':'Rozbiór słów'}</button><span class="small muted" style="font-family:var(--fm)">${esc(D[i][0])} — ${esc(D[i][2])}</span></div>${R.words?`<div style="margin-left:-52px">${wordsTable(i)}</div>`:''}</div>`:''}</div>
+  ${R.show?`<div style="border-top:1px solid var(--line);padding-top:12px" class="stack" ><div class="ans">${esc(D[i][1])}</div><div class="row"><button class="mini" data-a="say">▶ Lektor</button><button class="mini" data-a="twords" aria-expanded="${!!R.words}">${R.words?'Zwiń rozbiór':'Rozbiór słów'}</button><span class="small muted" style="font-family:var(--fm)">${esc(D[i][0])} — ${esc(D[i][2])}</span></div>${R.words?`<div style="margin-left:-52px">${wordsTable(i)}</div>`:mnList(i)}</div>`:''}</div>
   ${R.show?`<div class="eyebrow">Jak dobrze znasz to zdanie?</div><div class="rate">${[1,2,3,4,5].map(k=>`<button data-a="rate" data-r="${k}" aria-label="${k}: ${LABELS[k]}"><span class="s">${STAR}</span><span class="k">${k}</span></button>`).join('')}</div>
     <div class="legend">${[1,2,3,4,5].map(k=>`<b>${k}</b><span>${LABELS[k]}</span>`).join('')}</div>`
   :`<button class="primary" data-a="reveal" style="min-height:56px">Sprawdź</button>`}</div>`;}
@@ -345,11 +416,15 @@ function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0,0,0
   const playing=MIX&&!bg.paused; const cur=MIX?curItem():null;
   let h=`<div class="stack"><h1>Słuchanie</h1>`;
   if(!pool.length) return h+`<div class="hero"><b>Nie masz jeszcze zdań w nauce</b><span class="muted small">Dodaj paczkę w zakładce Nauka, a tutaj będziesz jej słuchał w tle.</span><button class="primary" data-a="tab" data-t="learn">Przejdź do nauki</button></div></div>`;
-  if(MIX){ h+=`<div class="now"><div class="between"><span class="eyebrow">${playing?'Teraz gra':'Pauza'} · ${fmtT(bg.currentTime||0)} / ${fmtT(MIX.dur)}</span><span class="small muted">${MIX.items.length} odtworzeń</span></div>
+  if(MIX){ h+=`<div class="now"><div class="between"><span class="eyebrow">${playing?'Teraz gra':'Pauza'} · ${fmtT((bg.currentTime||0)/S.set.lspeed)} / ${fmtT(MIX.dur/S.set.lspeed)}</span><span class="small muted">${MIX.mode==='repeat'?'powtarzanie · ':''}${MIX.items.length} zdań</span></div>
     <div class="no" id="nowno">${cur?esc(D[cur.i][1]):'…'}</div><div class="muted" id="nowpl">${cur?esc(D[cur.i][3]):''}</div><div id="nowst">${cur?starStr(stars(cur.i)):''}</div>
     <div class="row" style="justify-content:center;gap:16px"><button class="bigbtn primary" data-a="bgtoggle" aria-label="${playing?'Pauza':'Odtwarzaj'}">${playing?'<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" fill="currentColor"/><rect x="14" y="5" width="4" height="14" fill="currentColor"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></svg>'}</button><button data-a="bgstop">Zakończ</button></div>
     <span class="muted small" style="text-align:center">Gra dalej przy zgaszonym ekranie. Mieszanka się zapętla.</span></div>`; }
+  if(MIX) h+=`<div class="row"><span class="muted small">Tempo</span>${LSPEEDS.map(r=>`<button class="chip" data-a="lspeed" data-v="${r}" aria-pressed="${S.set.lspeed===r}">${r}×</button>`).join('')}</div>`;
   h+=`<div class="card stack"><div class="between"><h3>${MIX?'Nowa mieszanka':'Ułóż mieszankę'}</h3><span class="muted small">${pool.length} zdań</span></div>
+  <div class="seg" role="tablist"><button role="tab" aria-selected="${S.set.lmode!=='repeat'}" data-a="lmode" data-v="listen">Słuchanie</button><button role="tab" aria-selected="${S.set.lmode==='repeat'}" data-a="lmode" data-v="repeat">Powtarzanie na głos</button></div>
+  <span class="muted small">${S.set.lmode==='repeat'?'Po każdym zdaniu jest pauza na tyle długa, żebyś zdążył je powtórzyć na głos.':'Zdania lecą jedno po drugim, z krótką przerwą. Do słuchania przy pracy, w drodze, przed snem.'}</span>
+  ${MIX?'':`<div class="row"><span class="muted small">Tempo</span>${LSPEEDS.map(r=>`<button class="chip" data-a="lspeed" data-v="${r}" aria-pressed="${S.set.lspeed===r}">${r}×</button>`).join('')}</div>`}
   <div class="row"><button class="chip" data-a="lpool" data-v="all" aria-pressed="${S.set.lpool==='all'}">Wszystkie w nauce</button><button class="chip" data-a="lpool" data-v="recent" aria-pressed="${S.set.lpool==='recent'}">Ostatnie 3 paczki</button></div>
   <div class="row"><span class="muted small">Długość</span>${[10,20,40].map(m=>`<button class="chip" data-a="lmin" data-v="${m}" aria-pressed="${S.set.lmin===m}">${m} min</button>`).join('')}</div>
   <div class="row"><span class="muted small">Każde zdanie</span>${[1,2].map(m=>`<button class="chip" data-a="lrep" data-v="${m}" aria-pressed="${S.set.lrep===m}">${m}×</button>`).join('')}</div>
@@ -357,44 +432,42 @@ function listenView(){const pool=poolFor(S.set.lpool); const counts=[0,0,0,0,0,0
   <button class="primary" data-a="buildmix" ${building?'disabled':''} id="buildbtn">${building?'Przygotowuję…':'▶ Przygotuj i słuchaj'}</button></div>
   <p class="note">Zdania z 1★ i nowe słyszysz najczęściej, a z 5★ rzadko, żeby nie wyleciały z głowy. Mieszanka jest jednym nagraniem, więc gra także w tle i przy zablokowanym ekranie.</p></div>`;
   return h;}
+// pause after each sentence, in recording seconds. Repeat mode: time to say it yourself at your own pace (≈ the sentence at 1× plus a breath), whatever the tempo.
+const gapFor=d=>S.set.lmode==='repeat'?(d*1.15+0.7)*S.set.lspeed:1.3;
 const fmtT=s=>{s=Math.max(0,Math.floor(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
 function curItem(){if(!MIX) return null; const t=(bg.currentTime||0); let lo=0,hi=MIX.items.length-1,ans=null; while(lo<=hi){const m=(lo+hi)>>1; if(MIX.items[m].t<=t){ans=MIX.items[m];lo=m+1;} else hi=m-1;} return ans;}
 function pickSeq(pool,targetSec){const seq=[]; let t=0; const recent=[]; const w=pool.map(i=>WEIGHT[stars(i)]); const tw=w.reduce((a,b)=>a+b,0);
-  const est=i=>{const a=AFILE[i]; return (a.e-a.s)*S.set.lrep+1.3*S.set.lrep+0.6;};
+  const est=i=>{const a=AFILE[i], d=a.e-a.s; return (d+gapFor(d))*S.set.lrep+0.6;};
   let guard=0; while(t<targetSec&&guard++<5000){let x=Math.random()*tw, k=0; for(;k<pool.length;k++){x-=w[k]; if(x<=0) break;} const i=pool[Math.min(k,pool.length-1)];
     if(pool.length>4&&recent.includes(i)) continue; seq.push(i); t+=est(i); recent.push(i); if(recent.length>Math.min(4,pool.length-1)) recent.shift();}
   return seq;}
 let SR=16000;
-function makeCtx(sr){const C=window.OfflineAudioContext||window.webkitOfflineAudioContext; return new C(1,sr,sr);}
-async function decodeFile(f){const buf=await (await fetch(f)).arrayBuffer(); let ctx; try{ctx=makeCtx(SR);}catch(e){SR=22050; ctx=makeCtx(SR);}
-  return await new Promise((res,rej)=>{try{const p=ctx.decodeAudioData(buf,res,rej); if(p&&p.then) p.then(res,rej);}catch(e){rej(e);}});}
 async function buildMix(){ if(building) return; building=true; render(); stopFg();
   try{
-    const pool=poolFor(S.set.lpool); const seq=pickSeq(pool,S.set.lmin*60); const need=[...new Set(seq)];
+    const pool=poolFor(S.set.lpool); const seq=pickSeq(pool,S.set.lmin*60*S.set.lspeed); const need=[...new Set(seq)];
     const byFile={}; need.forEach(i=>{(byFile[AFILE[i].f]=byFile[AFILE[i].f]||[]).push(i);});
     const clips={}; let fi=0; const files=Object.keys(byFile);
     for(const f of files){ fi++; const b=$('#buildbtn'); if(b) b.textContent=`Przygotowuję… ${Math.round(fi/files.length*100)}%`;
-      const ab=await decodeFile(f); const ch=ab.getChannelData(0), sr=ab.sampleRate; SR=sr;
+      const ab=await decodeFile(f,16000); const ch=ab.getChannelData(0), sr=ab.sampleRate; SR=sr;
       byFile[f].forEach(i=>{const a=AFILE[i]; const s=Math.floor(a.s*sr), e=Math.min(ch.length,Math.floor(a.e*sr)); const c=new Int16Array(e-s); for(let k=0;k<c.length;k++){const v=Math.max(-1,Math.min(1,ch[s+k])); c[k]=v<0?v*32768:v*32767;} clips[i]=c;}); }
-    const gap=Math.floor(SR*1.3), tail=Math.floor(SR*0.6); let total=0; const items=[];
-    seq.forEach(i=>{items.push({i,t:total/SR}); for(let r=0;r<S.set.lrep;r++) total+=clips[i].length+gap; total+=tail;});
-    const data=new Int16Array(total); let pos=0; seq.forEach(i=>{for(let r=0;r<S.set.lrep;r++){data.set(clips[i],pos); pos+=clips[i].length+gap;} pos+=tail;});
-    const hdr=new ArrayBuffer(44), dv=new DataView(hdr); const ws=(o,s)=>{for(let k=0;k<s.length;k++) dv.setUint8(o+k,s.charCodeAt(k));};
-    ws(0,'RIFF'); dv.setUint32(4,36+data.byteLength,true); ws(8,'WAVE'); ws(12,'fmt '); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true); dv.setUint32(24,SR,true); dv.setUint32(28,SR*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true); ws(36,'data'); dv.setUint32(40,data.byteLength,true);
-    const blob=new Blob([hdr,data.buffer],{type:'audio/wav'});
+    const tail=Math.floor(SR*0.6); const gapOf=i=>Math.floor(SR*gapFor(clips[i].length/SR)); let total=0; const items=[];
+    seq.forEach(i=>{items.push({i,t:total/SR}); for(let r=0;r<S.set.lrep;r++) total+=clips[i].length+gapOf(i); total+=tail;});
+    const data=new Int16Array(total); let pos=0; seq.forEach(i=>{for(let r=0;r<S.set.lrep;r++){data.set(clips[i],pos); pos+=clips[i].length+gapOf(i);} pos+=tail;});
+    const blob=wavBlob(data,SR);
     if(MIX&&MIX.url) URL.revokeObjectURL(MIX.url);
-    MIX={url:URL.createObjectURL(blob),items,dur:total/SR};
-    bg.src=MIX.url; bg.loop=true; bg.playbackRate=1; lastCT=0;
-    if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:'Słuchanie w tle',artist:'Norsk',album:`${need.length} zdań`});
+    MIX={url:URL.createObjectURL(blob),items,dur:total/SR,mode:S.set.lmode};
+    bg.src=MIX.url; bg.loop=true; bg.defaultPlaybackRate=S.set.lspeed; bg.playbackRate=S.set.lspeed; setPitch(bg); lastCT=0;
+    if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:S.set.lmode==='repeat'?'Powtarzanie na głos':'Słuchanie w tle',artist:'Norsk',album:`${need.length} zdań`});
       navigator.mediaSession.setActionHandler('play',()=>bg.play()); navigator.mediaSession.setActionHandler('pause',()=>bg.pause());}catch(e){}}
     await bg.play().catch(()=>toast('Stuknij ▶, żeby zacząć'));
   }catch(e){console.error(e); toast('Nie udało się przygotować nagrania');}
   building=false; render();}
 function pauseBg(){if(MIX&&!bg.paused){bg.pause();}}
 let lsAcc=0;
-bg.addEventListener('timeupdate',()=>{const ct=bg.currentTime; let d=ct-lastCT; if(d<0) d=ct; if(d>0&&d<20){lsAcc+=d; const r=dayRec(); r.ls=(r.ls||0)+d; if(lsAcc>=60){lsAcc-=60; addXP(1);} }
-  lastCT=ct; if(V.tab==='listen'&&!T&&V.view!=='stats'){const c=curItem(); const a=$('#nowno'); if(a&&c&&a.dataset.i!=String(c.i)){a.dataset.i=c.i; a.textContent=D[c.i][1]; $('#nowpl').textContent=D[c.i][3]; $('#nowst').innerHTML=starStr(stars(c.i));} const ey=document.querySelector('.now .eyebrow'); if(ey) ey.textContent=`Teraz gra · ${fmtT(ct)} / ${fmtT(MIX.dur)}`;}});
-bg.addEventListener('play',()=>{lastCT=bg.currentTime; if(V.tab==='listen') render();});
+bg.addEventListener('timeupdate',()=>{const ct=bg.currentTime; let d=ct-lastCT; if(d<0) d=ct; d/=(bg.playbackRate||1); if(d>0&&d<20){lsAcc+=d; const r=dayRec(); r.ls=(r.ls||0)+d; if(lsAcc>=60){lsAcc-=60; addXP(1);} }
+  lastCT=ct; if(V.tab==='listen'&&!T&&V.view!=='stats'){const c=curItem(); const a=$('#nowno'); if(a&&c&&a.dataset.i!=String(c.i)){a.dataset.i=c.i; a.textContent=D[c.i][1]; $('#nowpl').textContent=D[c.i][3]; $('#nowst').innerHTML=starStr(stars(c.i));} const ey=document.querySelector('.now .eyebrow'); if(ey) ey.textContent=`Teraz gra · ${fmtT(ct/S.set.lspeed)} / ${fmtT(MIX.dur/S.set.lspeed)}`;}});
+bg.addEventListener('play',()=>{lastCT=bg.currentTime; if(bg.playbackRate!==S.set.lspeed){bg.playbackRate=S.set.lspeed; setPitch(bg);} if(V.tab==='listen') render();});
+bg.addEventListener('playing',()=>{if(bg.playbackRate!==S.set.lspeed) bg.playbackRate=S.set.lspeed;});
 bg.addEventListener('pause',()=>{save(); if(V.tab==='listen') render();});
 
 /* ---------- STATS ---------- */
@@ -420,8 +493,11 @@ function statsView(){const st=streak(); const r=dayRec(); const t=today();
   <div class="card stack"><h3>Cele</h3><div class="row"><span class="muted small" style="min-width:110px">Punkty dziennie</span>${[30,50,80,120].map(g=>`<button class="chip" data-a="goal" data-v="${g}" aria-pressed="${S.goal===g}">${g}</button>`).join('')}</div>
   <div class="row"><span class="muted small" style="min-width:110px">Nowe zdania</span>${[10,20,30].map(g=>`<button class="chip" data-a="newgoal" data-v="${g}" aria-pressed="${S.newGoal===g}">${g}</button>`).join('')}</div></div>
   <div class="card stack"><h3>Odznaki</h3><div class="badges">${BADGES.map(([id,name])=>`<div class="bdg ${S.bdg[id]?'got':''}"><span class="ic">${S.bdg[id]?'✓':'·'}</span><span>${esc(name)}</span></div>`).join('')}</div></div>
-  <div class="card stack"><h3>Kopia zapasowa</h3><span class="muted small">Postęp jest zapisany w telefonie. Zrób kopię co jakiś czas, np. wysyłając ją sobie mailem.</span>
-  <div class="row"><button data-a="export">Kopiuj kopię</button><button data-a="importshow">Wczytaj kopię</button></div><div id="bk"></div></div></div>`;}
+  <div class="card stack"><h3>Kopia zapasowa</h3><span class="muted small">Postęp i skojarzenia są zapisane tylko w telefonie. Zapisz kopię w Plikach lub na iCloud Drive, zwłaszcza przed aktualizacją aplikacji.${S.lastBk!=null?` Ostatnia kopia: ${t-S.lastBk===0?'dzisiaj':t-S.lastBk===1?'wczoraj':(t-S.lastBk)+' dni temu'}.`:' Nie masz jeszcze żadnej kopii.'}</span>
+  <button class="primary" data-a="backup">Zapisz kopię (Pliki / iCloud)</button>
+  <div class="row"><button data-a="importfile">Wczytaj z pliku</button><button class="ghost" data-a="export">Kopiuj jako tekst</button><button class="ghost" data-a="importshow">Wklej tekst</button></div>
+  <input type="file" id="imfile" hidden><div id="bk"></div></div>
+  <p class="note" style="text-align:center">Norsk · wersja ${APPVER} · ${Object.keys(S.m).length} skojarzeń</p></div>`;}
 
 /* ---------- actions ---------- */
 const A={
@@ -431,7 +507,7 @@ const A={
   closeov:()=>{$('#overlay').innerHTML='';},
   home:()=>go({view:'home'}),
   opengroup:d=>go({tab:'learn',view:'group',g:+d.g}),
-  openunit:d=>{const u=+d.u; go({tab:'learn',view:'unit',u,g:Math.floor(u/10),mode:'read',cur:-1});},
+  openunit:d=>{const u=+d.u; go({tab:'learn',view:'unit',u,g:Math.floor(u/10),mode:'read',cur:-1}); const [a,b]=uRange(u); for(let i=a;i<b;i++) prefetch(i);},
   mode:d=>{stopFg(); V.mode=d.m; V.cur=-1; render();},
   tr:()=>{S.set.tr=!S.set.tr; save(); render();},
   speed:d=>{S.set.rate=+d.r; fg.playbackRate=S.set.rate; save(); document.querySelectorAll('[data-a="speed"]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.r===S.set.rate));},
@@ -453,7 +529,7 @@ const A={
   reveal:()=>{T.show=true; T.words=false; render(); stopFg(); const id=runId; playOne(T.q[T.k],id);},
   say:()=>{stopFg(); const id=runId; playOne(T.q[T.k],id);},
   twords:()=>{T.words=!T.words; render();},
-  rate:d=>{const r=+d.r, i=T.q[T.k]; rate(i,r); T.got.push(r); if(r===1&&!T.requeued[i]){T.requeued[i]=1; T.q.push(i);} T.k++; T.show=false; T.words=false; stopFg(); render(); window.scrollTo(0,0);},
+  rate:d=>{const r=+d.r, i=T.q[T.k]; rate(i,r); T.got.push(r); if(r===1&&!T.requeued[i]){T.requeued[i]=1; T.q.push(i);} T.k++; T.show=false; T.words=false; stopFg(); render(); window.scrollTo(0,0); prefetch(T.q[T.k]); prefetch(T.q[T.k+1]);},
   testagain:()=>{const w=[...new Set(T.q.filter(i=>stars(i)<=2))]; if(!w.length){toast('Nie masz słabych zdań w tej rundzie'); return;} const b=T.back; startTest(shuffle(w),'Słabe jeszcze raz',b);},
   testend:()=>{const b=T&&T.back; T=null; stopFg(); if(b){V.tab=b.tab; V.view=b.view;} go({});},
   lpool:d=>{S.set.lpool=d.v; save(); render();}, lmin:d=>{S.set.lmin=+d.v; save(); render();}, lrep:d=>{S.set.lrep=+d.v; save(); render();},
@@ -464,12 +540,40 @@ const A={
   export:()=>{const txt=JSON.stringify(S); const box=$('#bk'); box.innerHTML=`<textarea id="bktxt" readonly>${esc(txt)}</textarea><span class="muted small">Skopiowane. Wklej to w mailu albo notatce.</span>`;
     const ta=$('#bktxt'); try{navigator.clipboard.writeText(txt).then(()=>toast('Kopia skopiowana'),()=>{ta.select();toast('Zaznacz i skopiuj tekst');});}catch(e){ta.select();}},
   importshow:()=>{$('#bk').innerHTML=`<textarea id="imtxt" placeholder="Wklej tu skopiowaną kopię"></textarea><button class="primary" data-a="import">Wczytaj i zastąp obecny postęp</button>`;},
-  import:()=>{try{const x=JSON.parse($('#imtxt').value); if(!x||x.v!==2||!x.s) throw 0; S=Object.assign(JSON.parse(JSON.stringify(DEF)),x); S.set=Object.assign({},DEF.set,x.set||{}); save(); toast('Postęp wczytany'); render();}catch(e){toast('To nie wygląda na kopię z aplikacji Norsk');}},
+  import:()=>{const x=parseBackup($('#imtxt').value); if(!x){toast('To nie wygląda na kopię z aplikacji Norsk'); return;} applyBackup(x);},
+  backup:()=>{const txt=JSON.stringify(S); const name=`norsk-kopia-${dkey(today())}.json`; const ok=()=>{S.lastBk=today(); save(); toast('Kopia zapisana'); if(V.view==='stats') render();};
+    let file=null; try{file=new File([txt],name,{type:'application/json'});}catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Norsk – kopia postępu'}).then(ok,e=>{if(!e||e.name!=='AbortError'){toast('Nie udało się, kopiuję jako tekst'); A.export();}}); return;}
+    try{const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},4000); ok();}catch(e){A.export();}},
+  importfile:()=>{const f=$('#imfile'); if(f){f.value=''; f.click();}},
+  importok:()=>{if(PEND) applyBackup(PEND); PEND=null;},
+  mnedit:d=>{const i=+d.i, w=(W[i]||[])[+d.k]; if(!w) return; const [f,b,g]=w; const [k,t]=mnGet(b,f);
+    $('#overlay').innerHTML=`<div class="modal"><div class="sheet stack"><div class="eyebrow">Twoje skojarzenie</div><h2>${esc(b)}${lc(f)!==lc(b)?` <span class="muted small">(${esc(f)})</span>`:''}</h2><div class="muted small">${esc(g||'')}</div>
+      <textarea id="mntxt" placeholder="np. trenge → trening: żeby coś umieć, potrzebujesz treningu">${esc(t)}</textarea>
+      <div class="row"><button class="primary" data-a="mnsave" data-key="${esc(k)}" data-i="${i}" style="flex:1">Zapisz</button>${t?`<button data-a="mndel" data-key="${esc(k)}" data-i="${i}">Usuń</button>`:''}<button class="ghost" data-a="closeov">Anuluj</button></div></div></div>`;
+    const ta=$('#mntxt'); try{ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);}catch(e){}},
+  mnsave:d=>{const t=$('#mntxt').value.trim(); if(t) S.m[d.key]=t; else delete S.m[d.key]; save(); $('#overlay').innerHTML=''; refreshSent(+d.i); toast(t?'Skojarzenie zapisane':'Skojarzenie usunięte');},
+  mndel:d=>{delete S.m[d.key]; save(); $('#overlay').innerHTML=''; refreshSent(+d.i); toast('Skojarzenie usunięte');},
+  lmode:d=>{S.set.lmode=d.v; save(); render();},
+  lspeed:d=>{S.set.lspeed=+d.v; save(); try{bg.defaultPlaybackRate=S.set.lspeed; bg.playbackRate=S.set.lspeed; setPitch(bg);}catch(e){} render();},
 };
+let PEND=null;
+function refreshSent(i){if(T){render(); return;} const el=document.getElementById('s'+i); if(el) el.outerHTML=sentenceItem(i);}
+function parseBackup(txt){try{const x=JSON.parse(txt); if(!x||x.v!==2||typeof x.s!=='object') return null; return x;}catch(e){return null;}}
+function applyBackup(x){S=Object.assign(JSON.parse(JSON.stringify(DEF)),x); normState(); try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} toast('Postęp wczytany'); render();}
+document.addEventListener('change',e=>{if(e.target.id!=='imfile') return; const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const rd=new FileReader(); rd.onload=()=>{const x=parseBackup(rd.result); const box=$('#bk'); if(!x){toast('Ten plik to nie jest kopia z aplikacji Norsk'); return;} PEND=x;
+    const rated=Object.values(x.s).filter(v=>v&&v.r).length, units=Object.keys(x.u||{}).length, days=Object.keys(x.day||{}).sort();
+    if(box) box.innerHTML=`<div class="hero"><b>${esc(f.name)}</b><span class="muted small">${units} paczek w nauce · ${rated} ocenionych zdań · ${Object.keys(x.m||{}).length} skojarzeń${days.length?` · ostatni dzień nauki ${days[days.length-1]}`:''}</span><button class="primary" data-a="importok">Zastąp obecny postęp tą kopią</button></div>`;};
+  rd.readAsText(f);});
 function shuffle(a){a=a.slice(); for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]];} return a;}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-a]'); if(!b) return; if(b.dataset.a==='closeov'&&e.target.closest('.box')&&e.target.tagName!=='BUTTON') return; const f=A[b.dataset.a]; if(f){e.preventDefault(); f(b.dataset,b);}});
+const AUDIO_ACTS={play:1,playall:1,rep:1,reveal:1,say:1};
+document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('modal')){$('#overlay').innerHTML=''; return;} const b=e.target.closest('[data-a]'); if(!b) return; if(AUDIO_ACTS[b.dataset.a]) unlockFg(); if(b.dataset.a==='closeov'&&e.target.closest('.box')&&e.target.tagName!=='BUTTON') return; const f=A[b.dataset.a]; if(f){e.preventDefault(); f(b.dataset,b);}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){header(); if(V.tab==='listen'&&!T) render();} else {try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}});
-if('serviceWorker' in navigator && location.protocol!=='file:'){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+if('serviceWorker' in navigator && location.protocol!=='file:'){const had=!!navigator.serviceWorker.controller; let reloaded=false;
+  navigator.serviceWorker.register('sw.js').then(r=>{try{r.update();}catch(e){}}).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||reloaded) return; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
+    if(MIX&&!bg.paused){toast('Jest nowa wersja. Otwórz aplikację ponownie, kiedy skończysz słuchać.'); return;} reloaded=true; location.reload();});}
 render();
 })();
 </script>

@@ -1,7 +1,7 @@
-const V='n1200-v2';
+const V='n1200-v3';
 const CORE=['./','index.html','data.js','manifest.json','icon-192.png','icon-512.png','apple-touch-icon.png'];
 const AUD=["audio/a0001.mp3", "audio/a0051.mp3", "audio/a0101.mp3", "audio/a0151.mp3", "audio/a0201.mp3", "audio/a0251.mp3", "audio/a0301.mp3", "audio/a0351.mp3", "audio/a0401.mp3", "audio/a0451.mp3", "audio/a0501.mp3", "audio/a0551.mp3", "audio/a0601.mp3", "audio/a0651.mp3", "audio/a0701.mp3", "audio/a0751.mp3", "audio/a0801.mp3", "audio/a0851.mp3", "audio/a0901.mp3", "audio/a0951.mp3", "audio/a1001.mp3", "audio/a1051.mp3", "audio/a1101.mp3", "audio/a1151.mp3"];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE)).then(()=>caches.open(V)).then(c=>Promise.all(AUD.map(u=>c.add(u).catch(()=>null))))); self.skipWaiting();});
+self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE.map(u=>new Request(u,{cache:'reload'})))).then(()=>caches.open(V)).then(c=>Promise.all(AUD.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>null))))); self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 async function ranged(req,resp){const range=req.headers.get('range'); if(!range||!resp) return resp; const buf=await resp.clone().arrayBuffer(); const L=buf.byteLength;
   const m=/bytes=(\d*)-(\d*)/.exec(range); if(!m) return resp; let s,e; if(m[1]===''){s=Math.max(0,L-(+m[2]||0)); e=L-1;} else {s=+m[1]; e=m[2]?Math.min(+m[2],L-1):L-1;}
