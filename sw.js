@@ -1,4 +1,4 @@
-const V='n1200-v7';
+const V='n1200-v8';
 const CORE=['./','index.html','data.js','manifest.json','icon-192.png','icon-512.png','apple-touch-icon.png'];
 const AUD=["audio/a0001.mp3", "audio/a0051.mp3", "audio/a0101.mp3", "audio/a0151.mp3", "audio/a0201.mp3", "audio/a0251.mp3", "audio/a0301.mp3", "audio/a0351.mp3", "audio/a0401.mp3", "audio/a0451.mp3", "audio/a0501.mp3", "audio/a0551.mp3", "audio/a0601.mp3", "audio/a0651.mp3", "audio/a0701.mp3", "audio/a0751.mp3", "audio/a0801.mp3", "audio/a0851.mp3", "audio/a0901.mp3", "audio/a0951.mp3", "audio/a1001.mp3", "audio/a1051.mp3", "audio/a1101.mp3", "audio/a1151.mp3"];
 // nowa wersja: pliki aplikacji z sieci, nagrania przepisane ze starej pamięci (bez ponownego pobierania 25 MB)

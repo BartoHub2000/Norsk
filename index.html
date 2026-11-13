@@ -225,7 +225,7 @@ const today=()=>dnum();
 
 /* ---------- state ---------- */
 const KEY='norsk1200.v2';
-const APPVER='7';
+const APPVER='8';
 const DEF={v:2,s:{},u:{},day:{},best:0,set:{rate:1,reps:5,tr:true,lmin:20,lrep:1,lpool:'all',lspeed:1,lmode:'listen'},bdg:{},m:{}};
 // skojarzenia z naszych rozmów, do edycji w aplikacji (klucz = forma podstawowa)
 const SEED_M={'trenge':'trening: żeby coś umieć, potrzebujesz treningu','framme':'brama: jesteś na miejscu, kiedy stoisz pod bramą','glemme':'gleba + mmm: zakopałem coś w glebie i… mmm, zapomniałem gdzie',
@@ -445,26 +445,32 @@ const speedCtl=()=>`<div class="row"><span class="muted small">Tempo</span>${LSP
 function hl(){document.querySelectorAll('.sitem').forEach(x=>x.classList.toggle('on',x.id==='s'+V.cur)); const on=document.getElementById('s'+V.cur); if(on) on.scrollIntoView({block:'nearest',behavior:'smooth'});}
 
 /* ---------- TEST ---------- */
-function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.filter(i=>stars(i)>0&&stars(i)<=3); const n14=ls.filter(i=>stars(i)>=1&&stars(i)<=4).length;
+function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.filter(i=>stars(i)>0&&stars(i)<=3); const rnd=roundInfo(); const n14=ls.filter(i=>stars(i)>=1&&stars(i)<=4).length;
   if(!ls.length) return `<div class="stack"><h1>Powtórki</h1><div class="hero"><b>Najpierw zacznij pierwszą paczkę</b><span class="muted small">Tutaj powtarzasz zdania, które już przerobiłeś w Nauce. Zacznij od pierwszej paczki.</span><button class="primary" data-a="tab" data-t="learn">Przejdź do nauki</button></div></div>`;
   const dist=[0,0,0,0,0,0]; ls.forEach(i=>dist[stars(i)]++);
   const cols=['var(--sunk)','var(--bad)','color-mix(in srgb,var(--bad) 50%,var(--warn))','var(--warn)','color-mix(in srgb,var(--warn) 40%,var(--good))','var(--good)'];
   let h=`<div class="stack"><h1>Powtórki</h1><p class="note" style="margin:0">Active recall starszych zdań: widzisz polskie zdanie, mówisz po norwesku, oceniasz. Każde zdanie wraca wtedy, gdy zaczyna się zapominać.</p>
   <div class="hero"><div class="eyebrow">Do powtórki dziś</div><div class="row" style="align-items:baseline"><b class="big">${due.length}</b><span class="muted">zdań</span></div><span class="muted small">Najpierw te, które znasz najsłabiej. Zdania z 5★ wracają po tygodniu, potem coraz rzadziej.</span><button class="primary" data-a="startdue" ${due.length?'':'disabled'}>Zacznij powtórki</button></div>
-  <div class="grid2"><button class="tile" data-a="startweak" ${weak.length?'':'disabled'}><span class="eyebrow">Słabe 1–3★</span><b>${weak.length}</b><span class="muted small">active recall najsłabszych</span></button><button class="tile" data-a="showweak" ${n14?'':'disabled'}><span class="eyebrow">Wyświetl 1–4★</span><b>${n14}</b><span class="muted small">słuchaj i powtarzaj nieopanowane</span></button></div>
+  <div class="grid2"><button class="tile" data-a="startround" ${rnd.n?'':'disabled'}><span class="eyebrow">Runda 1–4★</span><b>${rnd.n}</b><span class="muted small">zdań · ${rnd.q} przypomnień</span></button><button class="tile" data-a="showweak" ${n14?'':'disabled'}><span class="eyebrow">Wyświetl 1–4★</span><b>${n14}</b><span class="muted small">słuchaj i powtarzaj nieopanowane</span></button></div>
   <div class="card stack" style="gap:8px"><div class="between"><h3>Twoje zdania</h3><span class="muted small">${ls.length} w nauce</span></div><div class="dist">${dist.map((c,k)=>c?`<i style="width:${c/ls.length*100}%;background:${cols[k]}" title="${k}★: ${c}"></i>`:'').join('')}</div>
   <div class="row small muted" style="gap:12px">${dist.map((c,k)=>`<span>${k?k+'★':'bez oceny'}: <b>${c}</b></span>`).join('')}</div></div>
   <h2>Powtórz paczkę</h2><div class="stack" style="gap:8px">`;
   Object.keys(S.u).map(Number).sort((a,b)=>b-a).forEach(u=>{const ui=unitInfo(u); const d=dueList().filter(i=>i>=ui.a&&i<ui.b).length;
     h+=`<button class="ucard" data-a="testunit" data-u="${u}"><div><b>Zdania ${ui.a+1}–${ui.b}</b><div class="row" style="gap:10px;margin-top:2px">${starStr(ui.rated?Math.round(ui.pct*5):0)}<span class="pct muted">${pct(ui.pct)}</span></div></div><span class="chipst ${d?'learn':'done'}">${d?d+' do powtórki':'aktualna'}</span></button>`;});
   return h+`</div></div>`;}
+// runda: każde zdanie 1–4★ dostaje (5 − gwiazdki) przypomnień, rozłożonych w kolejnych przejściach
+function roundList(){return learningSet().filter(i=>stars(i)>=1&&stars(i)<=4);}
+function roundInfo(){const L=roundList(); return {n:L.length,q:L.reduce((a,i)=>a+5-stars(i),0)};}
+function buildRound(){const L=roundList(), need={}; L.forEach(i=>need[i]=5-stars(i)); const q=[];
+  for(let pass=1;pass<=4;pass++){const p=shuffle(L.filter(i=>need[i]>=pass)); if(p.length>1&&q.length&&p[0]===q[q.length-1]){[p[0],p[1]]=[p[1],p[0]];} q.push(...p);}
+  return q;}
 function startTest(list,title,back,extra){ if(!list.length){toast('Brak zdań do powtórki');return;} stopFg(); T=Object.assign({q:list.slice(),k:0,show:false,title,back,got:[],requeued:{},rc0:dayRec().rc||0},extra||{}); render(); window.scrollTo(0,0); prefetch(T.q[0]); prefetch(T.q[1]);}
 function testView(){const R=T;
   if(R.k>=R.q.length){const n=R.got.length; const avg=n?(R.got.reduce((a,b)=>a+b,0)/n):0; const d=[0,0,0,0,0,0]; R.got.forEach(r=>d[r]++);
     return `<div class="stack"><div class="eyebrow">${esc(R.title)} · koniec</div><h1>Średnio ${avg.toFixed(1)} ★</h1>
     <div class="card stack" style="gap:6px">${[5,4,3,2,1].map(k=>`<div class="between small"><span>${starStr(k)} ${SHORT[k]}</span><b>${d[k]}</b></div>`).join('')}</div>
     <p class="muted" style="margin:0">+${(dayRec().rc||0)-R.rc0} active recall. Zdania z 1★ wrócą jeszcze dziś, z 2–3★ za 1–2 dni, z 4★ za kilka dni, z 5★ za tydzień lub później.</p>
-    ${R.inline?`<div class="grid2"><button class="primary" data-a="testagain">Słabe jeszcze raz</button><button data-a="testend">Gotowe</button></div><div class="grid2"><button data-a="tab" data-t="listen">Posłuchaj w tle</button>${nextUnit()>=0?`<button data-a="openunit" data-u="${nextUnit()}">Następna paczka ›</button>`:'<span></span>'}</div>`:`<div class="grid2"><button class="primary" data-a="testagain">Słabe jeszcze raz</button><button data-a="testend">Gotowe</button></div>`}</div>`;}
+    ${R.inline?`<div class="grid2"><button class="primary" data-a="testagain">Słabe jeszcze raz</button><button data-a="testend">Gotowe</button></div><div class="grid2"><button data-a="tab" data-t="listen">Posłuchaj w tle</button>${nextUnit()>=0?`<button data-a="openunit" data-u="${nextUnit()}">Następna paczka ›</button>`:'<span></span>'}</div>`:`<div class="grid2">${R.round?`<button class="primary" data-a="startround">Nowa runda z nowymi ocenami</button>`:`<button class="primary" data-a="testagain">Słabe jeszcze raz</button>`}<button data-a="testend">Gotowe</button></div>`}</div>`;}
   const i=R.q[R.k];
   return `<div class="stack"><div class="between"><button class="ghost back" data-a="testend">${R.inline?'‹ Przerwij':'‹ Zakończ'}</button><span class="pct muted">${R.k+1} / ${R.q.length}</span></div>
   <div class="prog"><i style="width:${R.k/R.q.length*100}%"></i></div>
@@ -634,12 +640,13 @@ const A={
   testunit:d=>{const u=+d.u; if(!S.u[u]){S.u[u]=today(); const ui=unitInfo(u); addNew(ui.n);} const ui=unitInfo(u); const l=[]; for(let i=ui.a;i<ui.b;i++) l.push(i); startTest(shuffle(l),`Zdania ${ui.a+1}–${ui.b}`,{tab:V.tab,view:V.view});},
   startdue:()=>startTest(dueList().slice(0,40),'Powtórka na dziś',{tab:'test',view:'home'}),
   startweak:()=>startTest(shuffle(learningSet().filter(i=>stars(i)>0&&stars(i)<=3)).slice(0,30),'Słabe zdania',{tab:'test',view:'home'}),
+  startround:()=>{const q=buildRound(); if(!q.length){toast('Nie masz zdań z oceną 1–4★'); return;} startTest(q,`Runda 1–4★ · ${new Set(q).size} zdań`,{tab:'test',view:'home'},{round:true});},
   showweak:()=>{const L=learningSet().filter(i=>stars(i)>=1&&stars(i)<=4).sort((a,b)=>stars(a)-stars(b)||a-b); go({tab:'test',view:'weak',list:L,mode:'read',cur:-1}); L.slice(0,12).forEach(prefetch);},
   startmix:()=>startTest(shuffle(learningSet()).slice(0,20),'Losowy mix',{tab:'test',view:'home'}),
   reveal:()=>{T.show=true; T.words=false; render(); stopFg(); const id=runId; playOne(T.q[T.k],id);},
   say:()=>{stopFg(); const id=runId; playOne(T.q[T.k],id);},
   twords:()=>{T.words=!T.words; render();},
-  rate:d=>{const r=+d.r, i=T.q[T.k]; rate(i,r); T.got.push(r); if(r===1&&!T.requeued[i]){T.requeued[i]=1; T.q.push(i);} T.k++; T.show=false; T.words=false; stopFg(); render(); window.scrollTo(0,0); prefetch(T.q[T.k]); prefetch(T.q[T.k+1]);},
+  rate:d=>{const r=+d.r, i=T.q[T.k]; rate(i,r); T.got.push(r); if(r===1&&!T.round&&!T.requeued[i]){T.requeued[i]=1; T.q.push(i);} T.k++; T.show=false; T.words=false; stopFg(); render(); window.scrollTo(0,0); prefetch(T.q[T.k]); prefetch(T.q[T.k+1]);},
   testagain:()=>{const w=[...new Set(T.q.filter(i=>stars(i)<=3))]; if(!w.length){toast('Nie masz słabych zdań w tej rundzie'); return;} const b=T.back; startTest(shuffle(w),'Słabe jeszcze raz',b,T.inline?{inline:true,u:T.u}:null);},
   testend:()=>{const inl=T&&T.inline; const b=T&&T.back; T=null; stopFg(); if(inl){render(); window.scrollTo(0,0); return;} if(b){V.tab=b.tab; V.view=b.view;} go({});},
   lpool:d=>{S.set.lpool=d.v; save(); render();}, lmin:d=>{S.set.lmin=+d.v; save(); render();}, lrep:d=>{S.set.lrep=+d.v; save(); render();},
