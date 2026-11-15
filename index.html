@@ -264,7 +264,7 @@ const today=()=>dnum();
 
 /* ---------- state ---------- */
 const KEY='norsk1200.v2';
-const APPVER='9';
+const APPVER='10';
 const DEF={v:2,s:{},u:{},day:{},best:0,set:{rate:1,reps:5,tr:true,lmin:20,lrep:1,lpool:'all',lspeed:1,lmode:'listen'},bdg:{},m:{}};
 // skojarzenia z naszych rozmów, do edycji w aplikacji (klucz = forma podstawowa)
 const SEED_M={'trenge':'trening: żeby coś umieć, potrzebujesz treningu','framme':'brama: jesteś na miejscu, kiedy stoisz pod bramą','glemme':'gleba + mmm: zakopałem coś w glebie i… mmm, zapomniałem gdzie',
@@ -545,7 +545,7 @@ function unitView(){const u=V.u, ui=unitInfo(u), g=Math.floor(u/10);
   return h+`</div>`;}
 function curList(){if(V.view==='weak') return V.list||[]; const ui=unitInfo(V.u); return Array.from({length:ui.n},(_,k)=>ui.a+k);}
 function drillHTML(L){const k=Math.max(0,L.indexOf(V.cur)), i=L[k];
-  return `<div class="row"><span class="muted small">Powtórzeń</span>${[1,2,5].map(n=>`<button class="chip" data-a="reps" data-n="${n}" aria-pressed="${S.set.reps===n}">${n}×</button>`).join('')}</div>${speedCtl()}
+  return `<div class="row"><span class="muted small">Powtórzeń</span>${[1,2,5].map(n=>`<button class="chip" data-a="reps" data-n="${n}" aria-pressed="${S.set.reps===n}">${n}×</button>`).join('')}<button class="chip" data-a="loop" aria-pressed="${!!S.set.loop}">⟳ Zapętlaj</button></div>${speedCtl()}
     <div class="drill"><div class="between"><div class="eyebrow">Zdanie ${i+1} · ${k+1} z ${L.length} · słuchaj i powtarzaj w pauzie</div>${stars(i)?starStr(stars(i)):''}</div><div class="big">${esc(D[i][1])}</div><div class="muted">${esc(D[i][3])}</div>${mnList(i)}<div class="reps" id="reps">${Array.from({length:S.set.reps},()=>'<i></i>').join('')}</div></div>
     <div class="row"><button data-a="prev">‹</button><button class="primary" data-a="rep" id="repbtn" style="flex:1">▶ Start od zdania ${i+1}</button><button data-a="next">›</button></div>`;}
 function weakView(){const L=V.list||[];
@@ -563,13 +563,14 @@ const speedCtl=()=>`<div class="row"><span class="muted small">Tempo</span>${LSP
 function hl(){document.querySelectorAll('.sitem').forEach(x=>x.classList.toggle('on',x.id==='s'+V.cur)); const on=document.getElementById('s'+V.cur); if(on) on.scrollIntoView({block:'nearest',behavior:'smooth'});}
 
 /* ---------- TEST ---------- */
-function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.filter(i=>stars(i)>0&&stars(i)<=3); const rnd=roundInfo(); const n14=ls.filter(i=>stars(i)>=1&&stars(i)<=4).length;
+function testHome(){const ls=learningSet(); const due=dueList(); const weak=ls.filter(i=>stars(i)>0&&stars(i)<=3); const rnd=roundInfo(); const n14=ls.filter(i=>stars(i)>=1&&stars(i)<=4).length; const n5=ls.filter(i=>stars(i)>=5).length;
   if(!ls.length) return `<div class="stack"><h1>Powtórki</h1><div class="hero"><b>Najpierw zacznij pierwszą paczkę</b><span class="muted small">Tutaj powtarzasz zdania, które już przerobiłeś w Nauce. Zacznij od pierwszej paczki.</span><button class="primary" data-a="tab" data-t="learn">Przejdź do nauki</button></div></div>`;
   const dist=[0,0,0,0,0,0]; ls.forEach(i=>dist[stars(i)]++);
   const cols=['var(--sunk)','var(--bad)','color-mix(in srgb,var(--bad) 50%,var(--warn))','var(--warn)','color-mix(in srgb,var(--warn) 40%,var(--good))','var(--good)'];
   let h=`<div class="stack"><h1>Powtórki</h1><p class="note" style="margin:0">Active recall starszych zdań: widzisz polskie zdanie, mówisz po norwesku, oceniasz. Każde zdanie wraca wtedy, gdy zaczyna się zapominać.</p>
   <div class="hero"><div class="eyebrow">Do powtórki dziś</div><div class="row" style="align-items:baseline"><b class="big">${due.length}</b><span class="muted">zdań</span></div><span class="muted small">Najpierw te, które znasz najsłabiej. Zdania z 5★ wracają po tygodniu, potem coraz rzadziej.</span><button class="primary" data-a="startdue" ${due.length?'':'disabled'}>Zacznij powtórki</button></div>
   <div class="grid2"><button class="tile" data-a="startround" ${rnd.n?'':'disabled'}><span class="eyebrow">Runda 1–4★</span><b>${rnd.n}</b><span class="muted small">zdań · ${rnd.q} przypomnień</span></button><button class="tile" data-a="showweak" ${n14?'':'disabled'}><span class="eyebrow">Wyświetl 1–4★</span><b>${n14}</b><span class="muted small">słuchaj i powtarzaj nieopanowane</span></button></div>
+  <button class="tile" data-a="start5" ${n5?'':'disabled'} style="text-align:left"><span class="eyebrow">Utrwalenie 5★</span><b>${n5}</b><span class="muted small">active recall wszystkich opanowanych zdań, losowo, każde raz. Na przypomnienie co jakiś czas.</span></button>
   <div class="card stack" style="gap:8px"><div class="between"><h3>Twoje zdania</h3><span class="muted small">${ls.length} w nauce</span></div><div class="dist">${dist.map((c,k)=>c?`<i style="width:${c/ls.length*100}%;background:${cols[k]}" title="${k}★: ${c}"></i>`:'').join('')}</div>
   <div class="row small muted" style="gap:12px">${dist.map((c,k)=>`<span>${k?k+'★':'bez oceny'}: <b>${c}</b></span>`).join('')}</div></div>
   <h2>Powtórz paczkę</h2><div class="stack" style="gap:8px">`;
@@ -770,7 +771,7 @@ const A={
   prev:()=>{stopFg(); const L=curList(); V.cur=L[Math.max(0,L.indexOf(V.cur)-1)]; render();},
   next:()=>{stopFg(); const L=curList(); const k=L.indexOf(V.cur); V.cur=L[Math.min(L.length-1,k<0?1:k+1)]; render();},
   rep:async()=>{ if(document.getElementById('repbtn').dataset.on){stopFg(); render(); return;} stopFg(); if(V.view==='unit') ensureStarted(V.u); const id=runId; const L=curList(); wakeLock(); let k=Math.max(0,L.indexOf(V.cur));
-    for(;k<L.length&&alive(id);k++){const i=L[k]; V.cur=i; render(); const b=document.getElementById('repbtn'); if(b){b.textContent='■ Stop'; b.dataset.on='1';}
+    for(;alive(id);k++){if(k>=L.length){if(!S.set.loop||!L.length) break; k=0;} const i=L[k]; V.cur=i; render(); const b=document.getElementById('repbtn'); if(b){b.textContent='■ Stop'; b.dataset.on='1';}
       for(let r=0;r<S.set.reps&&alive(id);r++){document.querySelectorAll('#reps i').forEach((x,j)=>x.classList.toggle('on',j<=r)); const dur=await playOne(i,id); if(!alive(id)) break; await sleep(Math.max(900,(dur||2)*1000+700),id);} }
     if(alive(id)){releaseWake(); V.cur=L[L.length-1]; render(); toast(V.view==='unit'?'Koniec. Teraz krok 3: active recall':'Koniec listy');}},
   startrec:()=>{const u=V.u; ensureStarted(u); const ui=unitInfo(u); const l=[]; for(let i=ui.a;i<ui.b;i++) l.push(i); V.mode='rec'; startTest(shuffle(l),`Active recall · zdania ${ui.a+1}–${ui.b}`,null,{inline:true,u});},
@@ -779,6 +780,8 @@ const A={
   startdue:()=>startTest(dueList().slice(0,40),'Powtórka na dziś',{tab:'test',view:'home'}),
   startweak:()=>startTest(shuffle(learningSet().filter(i=>stars(i)>0&&stars(i)<=3)).slice(0,30),'Słabe zdania',{tab:'test',view:'home'}),
   startround:()=>{const q=buildRound(); if(!q.length){toast('Nie masz zdań z oceną 1–4★'); return;} startTest(q,`Runda 1–4★ · ${new Set(q).size} zdań`,{tab:'test',view:'home'},{round:true});},
+  loop:()=>{S.set.loop=!S.set.loop; save(); const b=document.querySelector('[data-a="loop"]'); if(b) b.setAttribute('aria-pressed',String(S.set.loop)); toast(S.set.loop?'Zapętlanie włączone':'Zapętlanie wyłączone');},
+  start5:()=>{const L=learningSet().filter(i=>stars(i)>=5); if(!L.length){toast('Nie masz jeszcze zdań z 5★'); return;} startTest(shuffle(L),`Utrwalenie 5★ · ${L.length} zdań`,{tab:'test',view:'home'});},
   showweak:()=>{const L=learningSet().filter(i=>stars(i)>=1&&stars(i)<=4).sort((a,b)=>stars(a)-stars(b)||a-b); go({tab:'test',view:'weak',list:L,mode:'read',cur:-1}); L.slice(0,12).forEach(prefetch);},
   startmix:()=>startTest(shuffle(learningSet()).slice(0,20),'Losowy mix',{tab:'test',view:'home'}),
   reveal:()=>{T.show=true; T.words=false; render(); stopFg(); const id=runId; playOne(T.q[T.k],id);},
